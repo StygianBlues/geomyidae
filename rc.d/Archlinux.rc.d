@@ -12,8 +12,6 @@ case "$1" in
     if [ $? -gt 0 ]; then
       stat_fail
     else
-      PID=`pidof -o %PPID /usr/bin/geomyidae`
-      echo $PID >/var/run/geomyidae.pid
       add_daemon geomyidae
       stat_done
     fi
