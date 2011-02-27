@@ -33,6 +33,8 @@ enum {
 
 int glfd = -1;
 int loglvl = 15;
+int running = 1;
+char *logfile = nil;
 
 char *argv0;
 char *stdbase = "/var/gopher";
@@ -57,7 +59,6 @@ char *htredir = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 int
 dropprivileges(struct group *gr, struct passwd *pw)
 {
-
 	if(gr != nil)
 		if(setgroups(1, &gr->gr_gid) != 0 || setgid(gr->gr_gid) != 0)
 			return -1;
@@ -194,19 +195,41 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 }
 
 void
-hndlsigchld(int signo)
+sighandler(int sig)
 {
-	int status;
+	switch(sig) {
+	case SIGCHLD:
+		while(waitpid(-1, NULL, WNOHANG) > 0);
+		break;
+	case SIGHUP:
+	case SIGINT:
+	case SIGQUIT:
+	case SIGABRT:
+	case SIGTERM:
+		if(logfile != nil)
+			stoplogging(glfd);
+		running = 0;
+		break;
+	default:
+		break;
+	}
+}
 
-	while(waitpid(-1, &status, WNOHANG) > 0);
-
-	return;
+void
+initsignals(void)
+{
+	signal(SIGCHLD, sighandler);
+	signal(SIGHUP, sighandler);
+	signal(SIGINT, sighandler);
+	signal(SIGQUIT, sighandler);
+	signal(SIGABRT, sighandler);
+	signal(SIGTERM, sighandler);
+	signal(SIGKILL, sighandler);
 }
 
 void
 usage(void)
 {
-
 	tprintf(2, "usage: %s [-d] [-l logfile] [-v loglvl] [-b base]"
 		   " [-p port] [-o sport] [-u user] [-g group] [-h host]"
 		   " [-i IP]\n",
@@ -222,7 +245,7 @@ main(int argc, char *argv[])
 	struct sockaddr_storage clt;
 	socklen_t cltlen;
 	int sock, list, opt, dofork;
-	char *port, *base, *logfile, clienth[NI_MAXHOST], clientp[NI_MAXSERV];
+	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV];
 	char *user, *group, *bindip, *ohost, *sport;
 	struct passwd *us;
 	struct group *gr;
@@ -230,7 +253,6 @@ main(int argc, char *argv[])
 	base = stdbase;
 	port = stdport;
 	dofork = 1;
-	logfile = nil;
 	user = nil;
 	group = nil;
 	us = nil;
@@ -349,7 +371,7 @@ main(int argc, char *argv[])
 	signal(SIGCHLD, hndlsigchld);
 
 	cltlen = sizeof(clt);
-	for(;;) {
+	while(running) {
 		sock = accept(list, (struct sockaddr *)&clt, &cltlen);
 		if(sock < 0) {
 			perror("accept");
