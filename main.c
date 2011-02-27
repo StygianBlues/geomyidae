@@ -390,6 +390,7 @@ main(int argc, char *argv[])
 		case 0:
 			handlerequest(sock, base, ohost, sport, clienth,
 						clientp);
+			return 0;
 		default:
 			wait(&opt);
 			close(sock);
