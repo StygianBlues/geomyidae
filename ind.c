@@ -1,5 +1,5 @@
 /*
- * Copy me if you can. 
+ * Copy me if you can.
  * by 20h
  */
 
@@ -39,8 +39,8 @@ gettype(char *filename)
 	int i;
 
 	end = strrchr(filename, '.');
-	if(end == nil) 
-		return &type[0]; 
+	if(end == nil)
+		return &type[0];
 	end++;
 
 	for(i = 0; type[i].end != nil; i++)
@@ -162,10 +162,10 @@ getadv(char *str)
 		addelem(ret, "Err");
 		addelem(ret, "server");
 		addelem(ret, "port");
-		
+
 		return ret;
 	}
-		
+
 	b = str + 1;
 	while((e = strchr(b, '|')) != nil) {
 		*e = '\0';
