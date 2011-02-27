@@ -19,6 +19,7 @@
 #include <time.h>
 #include <pwd.h>
 #include <grp.h>
+#include <errno.h>
 
 #include "ind.h"
 #include "handlr.h"
@@ -373,9 +374,15 @@ main(int argc, char *argv[])
 	while(running) {
 		sock = accept(list, (struct sockaddr *)&clt, &cltlen);
 		if(sock < 0) {
-			perror("accept");
-			close(list);
-			return 1;
+			switch(errno) {
+			case ECONNABORTED:
+			case EINTR:
+				continue;
+			default:
+				perror("accept");
+				close(list);
+				return 1;
+			}
 		}
 
 		getnameinfo((struct sockaddr *)&clt, cltlen, clienth,
