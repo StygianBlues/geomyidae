@@ -1,5 +1,5 @@
 /*
- * Copy me if you can. 
+ * Copy me if you can.
  * by 20h
  */
 
@@ -38,13 +38,13 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 
 		if(args == nil) {
 			addr = gmallocz(512, 2);
-                	if(gethostname(addr, 512) == -1) {
-                        	perror("gethostname");
-                        	close(sock);
+                        if(gethostname(addr, 512) == -1) {
+                                perror("gethostname");
+                                close(sock);
 				free(addr);
 				free(pa);
-                        	return;
-                	}
+                                return;
+                        }
 		} else
 			addr = gstrdup(args);
 
@@ -52,12 +52,12 @@ handledir(int sock, char *path, char *port, char *base, char *args,
                 b = strrchr(par + strlen(base), '/');
                 if(b != nil) {
 			*b = '\0';
-                        tprintf(sock, "1..\t%s\t%s\t%s\r\n", 
+                        tprintf(sock, "1..\t%s\t%s\t%s\r\n",
                                 par + strlen(base), addr, port);
                 }
 		free(par);
 
-		ndir = scandir(pa, &dirent, 0, alphasort);	
+		ndir = scandir(pa, &dirent, 0, alphasort);
 		if(ndir < 0) {
 			perror("scandir");
 			close(sock);
@@ -92,7 +92,7 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 	free(pa);
 	close(sock);
 	return;
-} 
+}
 
 void
 handlegph(int sock, char *file, char *port, char *base, char *args,
@@ -118,7 +118,7 @@ handlegph(int sock, char *file, char *port, char *base, char *args,
                         snprintf(addr, sizeof(addr), "%s", args);
 
 
-		for(i = 0; i < act->num; i++) { 
+		for(i = 0; i < act->num; i++) {
 			if(!strncmp(act->n[i]->e[3], "server", 6)) {
 				free(act->n[i]->e[3]);
 				act->n[i]->e[3] = gstrdup(addr);
@@ -188,7 +188,7 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 	if(sear == nil)
 		sear = "";
 
-	execl(file, p, sear, args, nil); 
+	execl(file, p, sear, args, nil);
 
 	close(sock);
 	return;

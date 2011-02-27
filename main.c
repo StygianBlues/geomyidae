@@ -1,5 +1,5 @@
 /*
- * Copy me if you can. 
+ * Copy me if you can.
  * by 20h
  */
 
@@ -24,12 +24,12 @@
 #include "arg.h"
 
 enum {
-	NOLOG 	= 0,
-	FILES 	= 1,
-	DIRS 	= 2,	
+	NOLOG	= 0,
+	FILES	= 1,
+	DIRS	= 2,
 	HTTP	= 4,
 	ERRORS	= 8,
-}; 
+};
 
 int glfd = -1;
 int loglvl = 15;
@@ -97,21 +97,21 @@ securepath(char *p, int len)
 }
 
 void
-logentry(char *host, char *port, char *qry, char *status) 
+logentry(char *host, char *port, char *qry, char *status)
 {
 	time_t tim;
 	struct tm *ptr;
-	char timstr[128]; 
+	char timstr[128];
 
         if(glfd >= 0) {
-                tim = time(0);
-                ptr = localtime(&tim);
+		tim = time(0);
+		ptr = localtime(&tim);
 
-                strftime(timstr, sizeof(timstr), "%a %b %d %H:%M:%S %Z %Y",
+		strftime(timstr, sizeof(timstr), "%a %b %d %H:%M:%S %Z %Y",
 					ptr);
 
-                tprintf(glfd, "[%s|%s:%s] %s (%s)\n",
-                        timstr, host, port, qry, status);
+		tprintf(glfd, "[%s|%s:%s] %s (%s)\n",
+			timstr, host, port, qry, status);
         }
 
 	return;
@@ -144,9 +144,9 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 				recvb + 4, recvb + 4, recvb + 4);
 		if(len > sizeof(path))
 			len = sizeof(path);
-		send(sock, path, len, 0); 
-		if(loglvl & HTTP) 
-			logentry(clienth, clientp, recvc, "HTTP redirect");  
+		send(sock, path, len, 0);
+		if(loglvl & HTTP)
+			logentry(clienth, clientp, recvc, "HTTP redirect");
 		return;
 	}
 
@@ -183,10 +183,10 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 							"dir listing");
 			return;
 		}
-			
+
 		send(sock, err, strlen(err), 0);
-		if(loglvl & ERRORS) 
-			logentry(clienth, clientp, recvc, "not found"); 
+		if(loglvl & ERRORS)
+			logentry(clienth, clientp, recvc, "not found");
 		close(sock);
 	}
 
@@ -251,7 +251,7 @@ main(int argc, char *argv[])
 		break;
 	case 'd':
 		dofork = 0;
-		break; 
+		break;
 	case 'v':
 		loglvl = atoi(EARGF(usage()));
 		break;
@@ -260,7 +260,7 @@ main(int argc, char *argv[])
 		break;
 	case 'g':
 		group = EARGF(usage());
-		break;	
+		break;
 	case 'i':
 		bindip = EARGF(usage());
 		break;
@@ -366,7 +366,7 @@ main(int argc, char *argv[])
 			perror("fork");
 			close(sock);
 			break;
-		case 0: 
+		case 0:
 			handlerequest(sock, base, ohost, sport, clienth,
 						clientp);
 			return 1;

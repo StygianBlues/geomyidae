@@ -1,7 +1,7 @@
 #ifndef ARG_H
 #define ARG_H
 
-#define USED(x) ((void)(x))	
+#define USED(x) ((void)(x))
 
 extern char *argv0;
 

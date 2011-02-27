@@ -1,5 +1,5 @@
 /*
- * Copy me if you can. 
+ * Copy me if you can.
  * by 20h
  */
 
