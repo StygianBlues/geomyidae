@@ -18,7 +18,7 @@ case "$1" in
     ;;
   stop)
     stat_busy "Stopping geomyidae"
-    [ ! -z "$PID" ]  && kill $PID &>/dev/null
+    [ ! -z "$PID" ]  && kill -KILL $PID &>/dev/null
     if [ $? -gt 0 ]; then
       stat_fail
     else
