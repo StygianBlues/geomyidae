@@ -305,7 +305,7 @@ reverselookup(char *host)
 	}
 
 	if(rethost == NULL)
-		rethost = strdup(host);
+		rethost = gstrdup(host);
 
 	return rethost;
 }
