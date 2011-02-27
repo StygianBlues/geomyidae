@@ -10,6 +10,10 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+
 #include "ind.h"
 #include "handlr.h"
 
@@ -283,5 +287,26 @@ smprintf(char *fmt, ...)
         va_end(fmtargs);
 
         return ret;
+}
+
+char *
+reverselookup(char *host)
+{
+	struct in_addr hoststr;
+	struct hostent *client;
+	char *rethost;
+
+	rethost = NULL;
+
+	if(inet_pton(AF_INET, host, &hoststr)) {
+		client = gethostbyaddr(&hoststr, sizeof(hoststr), AF_INET);
+		if(client != NULL)
+			rethost = strdup(client->h_name);
+	}
+
+	if(rethost == NULL)
+		rethost = strdup(host);
+
+	return rethost;
 }
 

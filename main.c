@@ -19,6 +19,7 @@
 #include <time.h>
 #include <pwd.h>
 #include <grp.h>
+
 #include "ind.h"
 #include "handlr.h"
 #include "arg.h"
@@ -102,17 +103,19 @@ logentry(char *host, char *port, char *qry, char *status)
 {
 	time_t tim;
 	struct tm *ptr;
-	char timstr[128];
+	char timstr[128], *ahost;
 
         if(glfd >= 0) {
 		tim = time(0);
 		ptr = localtime(&tim);
 
+		ahost = reverselookup(host);
 		strftime(timstr, sizeof(timstr), "%a %b %d %H:%M:%S %Z %Y",
 					ptr);
 
 		tprintf(glfd, "[%s|%s:%s] %s (%s)\n",
-			timstr, host, port, qry, status);
+			timstr, ahost, port, qry, status);
+		free(ahost);
         }
 
 	return;
@@ -364,11 +367,7 @@ main(int argc, char *argv[])
 		return 1;
 	}
 
-	if(dofork) {
-		signal(SIGINT, SIG_IGN);
-		signal(SIGQUIT, SIG_IGN);
-	}
-	signal(SIGCHLD, hndlsigchld);
+	initsignals();
 
 	cltlen = sizeof(clt);
 	while(running) {

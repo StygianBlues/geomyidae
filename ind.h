@@ -43,6 +43,7 @@ void tprintf(int fd, char *fmt, ...);
 int initlogging(char *logf);
 void stoplogging(int fd);
 char *smprintf(char *fmt, ...);
+char *reverselookup(char *host);
 
 #endif
 
