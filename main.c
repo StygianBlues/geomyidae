@@ -399,8 +399,6 @@ main(int argc, char *argv[])
 						clientp);
 			return 0;
 		default:
-			wait(&opt);
-			close(sock);
 			break;
 		}
 	}
