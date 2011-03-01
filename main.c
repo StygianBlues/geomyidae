@@ -16,6 +16,8 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <signal.h>
+#include <string.h>
+#include <strings.h>
 #include <time.h>
 #include <pwd.h>
 #include <grp.h>
@@ -212,7 +214,7 @@ sighandler(int sig)
 	case SIGTERM:
 		if(logfile != nil)
 			stoplogging(glfd);
-		running = 0;
+		exit(EXIT_SUCCESS);
 		break;
 	default:
 		break;
@@ -245,7 +247,7 @@ usage(void)
 int
 main(int argc, char *argv[])
 {
-	struct addrinfo hints, *ai;
+	struct addrinfo hints, *ai, *rp;
 	struct sockaddr_storage clt;
 	socklen_t cltlen;
 	int sock, list, opt, dofork;
@@ -325,8 +327,8 @@ main(int argc, char *argv[])
 		}
 	}
 
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_flags |= AI_PASSIVE;
+	bzero(&hints, sizeof(hints));
+	hints.ai_flags = AI_PASSIVE;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_family = AF_INET;
@@ -339,11 +341,20 @@ main(int argc, char *argv[])
 		return 1;
 	}
 
-	list = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
-	if(list < 0) {
-		perror("socket");
+	for(rp = ai; rp != nil; rp = rp->ai_next) {
+		list = socket(rp->ai_family, rp->ai_socktype,
+				rp->ai_protocol);
+		if(list < 0)
+			continue;
+		if(bind(list, rp->ai_addr, rp->ai_addrlen) == 0)
+			break;
+		close(list);
+	}
+	if(rp == nil) {
+		perror("Could not find any suitable bindable address.");
 		return 1;
 	}
+	freeaddrinfo(ai);
 
 	opt = 1;
 	if(setsockopt(list, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
@@ -351,17 +362,10 @@ main(int argc, char *argv[])
 		return 1;
 	}
 
-	if(bind(list, ai->ai_addr, ai->ai_addrlen)) {
-		perror("bind");
-		return 1;
-	}
-
 	if(listen(list, 255)) {
 		perror("listen");
 		return 1;
 	}
-
-	freeaddrinfo(ai);
 
 	if(dropprivileges(gr, us) < 0) {
 		perror("cannot drop privileges");
