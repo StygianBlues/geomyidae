@@ -142,11 +142,14 @@ freeindex(Indexs *i)
 void
 addelem(Elems *e, char *s)
 {
+	int slen;
+
+	slen = strlen(s) + 1;
 
 	e->num++;
 	e->e = realloc(e->e, sizeof(char *) * e->num);
-	e->e[e->num - 1] = gmallocz(strlen(s) + 1, 0);
-	strcpy(e->e[e->num - 1], s);
+	e->e[e->num - 1] = gmallocz(slen, 0);
+	strncpy(e->e[e->num - 1], s, slen - 1);
 
 	return;
 }

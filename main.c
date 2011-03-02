@@ -133,9 +133,9 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	int len, fd;
 	filetype *type;
 
-	memset(&dir, 0, sizeof(dir));
-	memset(recvb, 0, sizeof(recvb));
-	memset(recvc, 0, sizeof(recvc));
+	bzero(&dir, sizeof(dir));
+	bzero(recvb, sizeof(recvb));
+	bzero(recvc, sizeof(recvc));
 
 	len = recv(sock, recvb, sizeof(recvb), 0);
 	if(len > 1) {
@@ -144,7 +144,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 		if(recvb[len - 1] == '\n')
 			recvb[len - 1] = '\0';
 	}
-	strcpy(recvc, recvb);
+	strncpy(recvc, recvb, sizeof(recvc) - 1);
 
 	if(!strncmp(recvb, "URL:", 4)) {
 		len = snprintf(path, sizeof(path), htredir,

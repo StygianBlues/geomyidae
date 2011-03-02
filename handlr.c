@@ -188,7 +188,7 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 	if(sear == nil)
 		sear = "";
 
-	execl(file, p, sear, args, nil);
+	execl(file, p, sear, args, (char *)nil);
 
 	close(sock);
 	return;
