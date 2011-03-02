@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 
 #include "ind.h"
@@ -299,7 +300,8 @@ reverselookup(char *host)
 	rethost = NULL;
 
 	if(inet_pton(AF_INET, host, &hoststr)) {
-		client = gethostbyaddr(&hoststr, sizeof(hoststr), AF_INET);
+		client = gethostbyaddr((const void *)&hoststr,
+				sizeof(hoststr), AF_INET);
 		if(client != NULL)
 			rethost = strdup(client->h_name);
 	}
