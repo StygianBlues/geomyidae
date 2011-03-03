@@ -1,5 +1,5 @@
 PROGRAM = geomyidae
-VERSION = 0.17
+VERSION = 0.18
 
 PREFIX ?= /usr
 BINDIR ?= $(PREFIX)/bin
