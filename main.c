@@ -38,6 +38,7 @@ enum {
 int glfd = -1;
 int loglvl = 15;
 int running = 1;
+int listfd = -1;
 char *logfile = nil;
 
 char *argv0;
@@ -129,7 +130,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 			char *clientp)
 {
 	struct stat dir;
-	char recvc[1024], recvb[1024], path[1024], *args, *sear, *c;
+	char recvc[1025], recvb[1025], path[1025], *args, *sear, *c;
 	int len, fd;
 	filetype *type;
 
@@ -137,14 +138,14 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	bzero(recvb, sizeof(recvb));
 	bzero(recvc, sizeof(recvc));
 
-	len = recv(sock, recvb, sizeof(recvb), 0);
-	if(len > 1) {
+	len = recv(sock, recvb, sizeof(recvb)-1, 0);
+	if(len > 0) {
 		if(recvb[len - 2] == '\r')
 			recvb[len - 2] = '\0';
 		if(recvb[len - 1] == '\n')
 			recvb[len - 1] = '\0';
 	}
-	strncpy(recvc, recvb, sizeof(recvc) - 1);
+	memmove(recvc, recvb, len+1);
 
 	if(!strncmp(recvb, "URL:", 4)) {
 		len = snprintf(path, sizeof(path), htredir,
@@ -194,7 +195,6 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 		send(sock, err, strlen(err), 0);
 		if(loglvl & ERRORS)
 			logentry(clienth, clientp, recvc, "not found");
-		close(sock);
 	}
 
 	return;
@@ -214,6 +214,8 @@ sighandler(int sig)
 	case SIGTERM:
 		if(logfile != nil)
 			stoplogging(glfd);
+		if(listfd >= 0)
+			close(listfd);
 		exit(EXIT_SUCCESS);
 		break;
 	default:
@@ -250,7 +252,7 @@ main(int argc, char *argv[])
 	struct addrinfo hints, *ai, *rp;
 	struct sockaddr_storage clt;
 	socklen_t cltlen;
-	int sock, list, opt, dofork;
+	int sock, opt, dofork;
 	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV];
 	char *user, *group, *bindip, *ohost, *sport;
 	struct passwd *us;
@@ -342,33 +344,36 @@ main(int argc, char *argv[])
 	}
 
 	for(rp = ai; rp != nil; rp = rp->ai_next) {
-		list = socket(rp->ai_family, rp->ai_socktype,
+		listfd = socket(rp->ai_family, rp->ai_socktype,
 				rp->ai_protocol);
-		if(list < 0)
+		if(listfd < 0)
 			continue;
-		if(bind(list, rp->ai_addr, rp->ai_addrlen) == 0)
+		if(bind(listfd, rp->ai_addr, rp->ai_addrlen) == 0)
 			break;
-		close(list);
+		close(listfd);
 	}
 	if(rp == nil) {
-		perror("Could not find any suitable bindable address.");
+		perror("getaddrinfo");
 		return 1;
 	}
 	freeaddrinfo(ai);
 
 	opt = 1;
-	if(setsockopt(list, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+	if(setsockopt(listfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
 		perror("setsockopt");
+		close(listfd);
 		return 1;
 	}
 
-	if(listen(list, 255)) {
+	if(listen(listfd, 255)) {
 		perror("listen");
+		close(listfd);
 		return 1;
 	}
 
 	if(dropprivileges(gr, us) < 0) {
-		perror("cannot drop privileges");
+		perror("dropprivileges");
+		close(listfd);
 		return 1;
 	}
 
@@ -376,15 +381,19 @@ main(int argc, char *argv[])
 
 	cltlen = sizeof(clt);
 	while(running) {
-		sock = accept(list, (struct sockaddr *)&clt, &cltlen);
+		sock = accept(listfd, (struct sockaddr *)&clt, &cltlen);
 		if(sock < 0) {
 			switch(errno) {
 			case ECONNABORTED:
 			case EINTR:
+				if (!running) {
+					close(listfd);
+					return 0;
+				}
 				continue;
 			default:
 				perror("accept");
-				close(list);
+				close(listfd);
 				return 1;
 			}
 		}
@@ -401,13 +410,15 @@ main(int argc, char *argv[])
 		case 0:
 			handlerequest(sock, base, ohost, sport, clienth,
 						clientp);
+			shutdown(sock, SHUT_RDWR);
+			close(sock);
 			return 0;
 		default:
 			break;
 		}
 	}
 
-	close(list);
+	close(listfd);
 	if(logfile != nil)
 		stoplogging(glfd);
 	return 0;

@@ -148,7 +148,7 @@ addelem(Elems *e, char *s)
 
 	e->num++;
 	e->e = realloc(e->e, sizeof(char *) * e->num);
-	e->e[e->num - 1] = gmallocz(slen, 0);
+	e->e[e->num - 1] = gmallocz(slen, 2);
 	strncpy(e->e[e->num - 1], s, slen - 1);
 
 	return;

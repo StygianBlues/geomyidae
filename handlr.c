@@ -40,7 +40,6 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 			addr = gmallocz(512, 2);
                         if(gethostname(addr, 512) == -1) {
                                 perror("gethostname");
-                                close(sock);
 				free(addr);
 				free(pa);
                                 return;
@@ -60,7 +59,6 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 		ndir = scandir(pa, &dirent, 0, alphasort);
 		if(ndir < 0) {
 			perror("scandir");
-			close(sock);
 			free(addr);
 			free(pa);
 			return;
@@ -90,8 +88,6 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 	if(addr != nil)
 		free(addr);
 	free(pa);
-	close(sock);
-	return;
 }
 
 void
@@ -111,7 +107,6 @@ handlegph(int sock, char *file, char *port, char *base, char *args,
                 if(args == nil) {
                         if(gethostname(addr, sizeof(addr)) == -1) {
                                 perror("gethostname");
-                                close(sock);
                                 return;
                         }
                 } else
@@ -139,9 +134,6 @@ handlegph(int sock, char *file, char *port, char *base, char *args,
 
 		freeindex(act);
 	}
-
-	close(sock);
-	return;
 }
 
 void
@@ -163,9 +155,6 @@ handlebin(int sock, char *file, char *port, char *base, char *args,
 			send(sock, sendb, len, 0);
 		close(fd);
 	}
-
-	close(sock);
-	return;
 }
 
 void
@@ -189,8 +178,5 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 		sear = "";
 
 	execl(file, p, sear, args, (char *)nil);
-
-	close(sock);
-	return;
 }
 
