@@ -1,56 +1,67 @@
-PROGRAM = geomyidae
+# geomyidae - a tiny, standalone gopherd written in C
+# See LICENSE file for copyright and license details.
+NAME = geomyidae
 VERSION = 0.17
 
 PREFIX ?= /usr
 BINDIR ?= $(PREFIX)/bin
 MANDIR ?= $(PREFIX)/man/man8
 
-#CPPFLAGS += -D_BSD_SOURCE
 CFLAGS += -O2 -Wall -I. -I/usr/include 
 LDFLAGS += -L/usr/lib -L. -lc
+CC = cc
 
-CFILES = main.c ind.c handlr.c 
+SRC = main.c ind.c handlr.c 
+OBJ = ${SRC:.c=.o}
 
-OBJECTS = ${CFILES:.c=.o}
+all: options $(NAME)
 
-all: $(PROGRAM)
-
-${PROGRAM}: ${OBJECTS}
-	${CC} ${LDFLAGS} -o ${PROGRAM} ${OBJECTS}
-
-.SUFFIXES : .c .h
+options:
+	@echo ${NAME} build options:
+	@echo "CFLAGS   = ${CFLAGS}"
+	@echo "LDFLAGS  = ${LDFLAGS}"
+	@echo "CC       = ${CC}"
 
 .c.o :
-	${CC} ${CFLAGS} ${CPPFLAGS} -c $<
-.c :
-	${CC} ${CFLAGS} ${CPPFLAGS} -c $<
+	@echo CC $<
+	@${CC} ${CFLAGS} -c $<
+
+${OBJ}:
+
+${NAME}: ${OBJ}
+	@echo CC -o $@
+	@${CC} -o $@ ${OBJ} ${LDFLAGS}
 
 clean :
-	@rm -f *.o ${PROGRAM} core *~
+	@echo cleaning
+	@rm -f ${NAME} ${OBJ} ${NAME}-${VERSIOn}.tar.gz 
 
-install: $(PROGRAM)
+install: all
+	@echo installing executable to ${DESTDIR}${PREFIX}/bin
 	@mkdir -p ${DESTDIR}${BINDIR}
-	@cp -f ${PROGRAM} ${DESTDIR}${BINDIR}
-	@strip ${DESTDIR}${BINDIR}/${PROGRAM}
-	@chmod 755 ${DESTDIR}${BINDIR}/${PROGRAM}
+	@cp -f ${NAME} ${DESTDIR}${BINDIR}
+	@strip ${DESTDIR}${BINDIR}/${NAME}
+	@chmod 755 ${DESTDIR}${BINDIR}/${NAME}
+	@echo installing manpage to ${DESTDIR}${MANDIR}
 	@mkdir -p ${DESTDIR}${MANDIR}
-	@cp -f geomyidae.8 ${DESTDIR}${MANDIR}
-	@chmod 644 ${DESTDIR}${MANDIR}/${PROGRAM}.8
+	@cp -f ${NAME}.8 ${DESTDIR}${MANDIR}
+	@chmod 644 ${DESTDIR}${MANDIR}/${NAME}.8
 
 uninstall:
-	@rm -f ${DESTDIR}${BINDIR}/${PROGRAM}
-	@rm -f ${DESTDIR}${MANDIR}/${PROGRAM}.8
+	@echo removing executable file from ${DESTDIR}${PREFIX}/bin
+	@rm -f ${DESTDIR}${BINDIR}/${NAME}
+	@echo removing manpage from ${DESTDIR}${MANDIR}
+	@rm -f ${DESTDIR}${MANDIR}/${NAME}.8
 
 dist: clean
-	@mkdir -p "${PROGRAM}-${VERSION}"
-	@cp -r rc.d README LICENSE index.gph Makefile geomyidae.8 \
-	       	*.c *.h "${PROGRAM}-${VERSION}"
-	@chmod 755 "${PROGRAM}-${VERSION}"
-	@chmod 744 "${PROGRAM}-${VERSION}"/*
-	@tar -cf "${PROGRAM}-${VERSION}.tar" "${PROGRAM}-${VERSION}"
-	@gzip "${PROGRAM}-${VERSION}.tar"
-	@mv "${PROGRAM}-${VERSION}.tar.gz" "${PROGRAM}-${VERSION}.tgz"
-	@rm -rf "${PROGRAM}-${VERSION}"
+	@echo creating dist tarball
+	@mkdir -p ${NAME}-${VERSION}
+	@cp -R rc.d README LICENSE index.gph Makefile ${NAME}.8 \
+	       	*.c *.h ${NAME}-${VERSION}
+	@tar -cf ${NAME}-${VERSION}.tar ${NAME}-${VERSION}
+	@gzip ${NAME}-${VERSION}.tar
+	@mv ${NAME}-${VERSION}.tar.gz ${NAME}-${VERSION}.tgz
+	@rm -rf "${NAME}-${VERSION}"
 
-.PHONY: all clean dist install uninstall
+.PHONY: all options clean dist install uninstall
 
