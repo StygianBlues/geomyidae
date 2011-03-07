@@ -212,6 +212,7 @@ sighandler(int sig)
 	case SIGQUIT:
 	case SIGABRT:
 	case SIGTERM:
+	case SIGKILL:
 		if(logfile != nil)
 			stoplogging(glfd);
 		if(listfd >= 0)

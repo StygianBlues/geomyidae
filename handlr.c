@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <sys/wait.h>
 #include "ind.h"
 #include "arg.h"
 
@@ -177,6 +178,16 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 	if(sear == nil)
 		sear = "";
 
-	execl(file, p, sear, args, (char *)nil);
+	switch(fork()) {
+	case 0:
+		execl(file, p, sear, args, (char *)nil);
+	case -1:
+		break;
+	default:
+		wait(NULL);
+		shutdown(sock, SHUT_RDWR);
+		close(sock);
+		break;
+	}
 }
 
