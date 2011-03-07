@@ -50,7 +50,7 @@ commands.  The resulting executable should be run by root.
      % make; sudo make install;
      % sudo mkdir -p /var/gopher;
      % sudo cp index.gph /var/gopher;
-     % sudo eomyidae -l /var/log/geomyidae.log -b /var/gopher -p 70;
+     % sudo geomyidae -l /var/log/geomyidae.log -b /var/gopher -p 70;
      % tail -f /var/log/geomyidae.log;
      #
      # Use whatever gopher client you like to gopher to
@@ -108,7 +108,7 @@ Port geomyidae displays within base directory (default: 70).
 .
 Use in conjunction with
 .Ic -p
-for obfuscating actual port neomyidae is running on.
+for obfuscating actual port geomyidae is running on.
 .
 .It Fl u Ar user
 Sets the user to which privileges drop when geomyidae is ready
