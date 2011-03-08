@@ -215,8 +215,10 @@ sighandler(int sig)
 	case SIGKILL:
 		if(logfile != nil)
 			stoplogging(glfd);
-		if(listfd >= 0)
+		if(listfd >= 0) {
+			shutdown(listfd, SHUT_RDWR);
 			close(listfd);
+		}
 		exit(EXIT_SUCCESS);
 		break;
 	default:
@@ -359,13 +361,6 @@ main(int argc, char *argv[])
 	}
 	freeaddrinfo(ai);
 
-	opt = 1;
-	if(setsockopt(listfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
-		perror("setsockopt");
-		close(listfd);
-		return 1;
-	}
-
 	if(listen(listfd, 255)) {
 		perror("listen");
 		close(listfd);
@@ -388,6 +383,7 @@ main(int argc, char *argv[])
 			case ECONNABORTED:
 			case EINTR:
 				if (!running) {
+					shutdown(listfd, SHUT_RDWR);
 					close(listfd);
 					return 0;
 				}
@@ -419,6 +415,7 @@ main(int argc, char *argv[])
 		}
 	}
 
+	shutdown(listfd, SHUT_RDWR);
 	close(listfd);
 	if(logfile != nil)
 		stoplogging(glfd);
