@@ -255,7 +255,7 @@ main(int argc, char *argv[])
 	struct addrinfo hints, *ai, *rp;
 	struct sockaddr_storage clt;
 	socklen_t cltlen;
-	int sock, opt, dofork;
+	int sock, dofork;
 	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV];
 	char *user, *group, *bindip, *ohost, *sport;
 	struct passwd *us;
