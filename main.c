@@ -45,7 +45,7 @@ char *argv0;
 char *stdbase = "/var/gopher";
 char *stdport = "70";
 char *indexf = "/index.gph";
-char *err = "0Sorry, but the requested token could not be found\tErr"
+char *err = "3Sorry, but the requested token '%s' could not be found.\tErr"
 	    "\tlocalhost\t70\r\n.\r\n\r\n";
 char *htredir = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n"
@@ -192,7 +192,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 			return;
 		}
 
-		send(sock, err, strlen(err), 0);
+		tprintf(sock, err, recvc); 
 		if(loglvl & ERRORS)
 			logentry(clienth, clientp, recvc, "not found");
 	}
