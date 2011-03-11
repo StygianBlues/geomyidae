@@ -279,10 +279,8 @@ smprintf(char *fmt, ...)
         char *ret;
         int size;
 
-        ret = "";
-
         va_start(fmtargs, fmt);
-        size = vsnprintf(ret, 0, fmt, fmtargs);
+        size = vsnprintf(NULL, 0, fmt, fmtargs);
         va_end(fmtargs);
 
         ret = gmallocz(++size, 2);
