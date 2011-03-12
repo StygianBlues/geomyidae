@@ -113,21 +113,8 @@ handlegph(int sock, char *file, char *port, char *base, char *args,
                 } else
                         snprintf(addr, sizeof(addr), "%s", args);
 
-
 		for(i = 0; i < act->num; i++) {
-			if(!strncmp(act->n[i]->e[3], "server", 6)) {
-				free(act->n[i]->e[3]);
-				act->n[i]->e[3] = gstrdup(addr);
-			}
-			if(!strncmp(act->n[i]->e[4], "port", 4)) {
-				free(act->n[i]->e[4]);
-				act->n[i]->e[4] = gstrdup(port);
-			}
-			tprintf(sock, "%.1s%s\t%s\t%s\t%s\r\n",
-				act->n[i]->e[0], act->n[i]->e[1],
-				act->n[i]->e[2], act->n[i]->e[3],
-				act->n[i]->e[4]);
-
+			printelem(sock, act->n[i], addr, port);
 			freeelem(act->n[i]);
 			act->n[i] = nil;
 		}
@@ -164,20 +151,19 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 {
 	char *p;
 
-	USED(port);
 	USED(base);
+	USED(port);
 
 	p = strrchr(file, '/');
 	if(p == nil)
 		p = file;
 
-	dup2(sock, 1);
-	dup2(sock, 0);
-	dup2(sock, 2);
-
 	if(sear == nil)
 		sear = "";
 
+	dup2(sock, 0);
+	dup2(sock, 1);
+	dup2(sock, 2);
 	switch(fork()) {
 	case 0:
 		execl(file, p, sear, args, (char *)nil);
@@ -191,3 +177,60 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 	}
 }
 
+void
+handledcgi(int sock, char *file, char *port, char *base, char *args,
+		char *sear)
+{
+	char *p, *ln, addr[512];
+	int outpipe[2];
+	Elems *el;
+
+	USED(base);
+
+	if(pipe(outpipe) < 0)
+		return;
+
+	p = strrchr(file, '/');
+	if(p == nil)
+		p = file;
+
+	if(args == nil) {
+		if(gethostname(addr, sizeof(addr)) == -1) {
+			perror("gethostname");
+			return;
+		}
+	} else
+		snprintf(addr, sizeof(addr), "%s", args);
+
+	if(sear == nil)
+		sear = "";
+
+	dup2(sock, 0);
+	dup2(sock, 2);
+	switch(fork()) {
+	case 0:
+		dup2(outpipe[1], 1);
+		close(outpipe[0]);
+		execl(file, p, sear, args, (char *)nil);
+	case -1:
+		break;
+	default:
+		dup2(sock, 1);
+		close(outpipe[1]);
+
+		while((ln = readln(outpipe[0])) != nil) {
+			el = getadv(ln);
+			if (el == nil)
+				continue;
+
+			printelem(sock, el, addr, port);
+			freeelem(el);
+		}
+		tprintf(sock, "\r\n.\r\n\r\n");
+
+		wait(NULL);
+		shutdown(sock, SHUT_RDWR);
+		close(sock);
+		break;
+	}
+}

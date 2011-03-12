@@ -35,6 +35,8 @@ void *gmallocz(int l, int d);
 char *gstrdup(char *str);
 Indexs *scanfile(char *fname);
 Elems *getadv(char *str);
+void printelem(int fd, Elems *el, char *addr, char *port);
+void addindexs(Indexs *idx, Elems *el);
 void addelem(Elems *e, char *s);
 void freeindex(Indexs *i);
 void freeelem(Elems *e);
