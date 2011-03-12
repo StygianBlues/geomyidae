@@ -1,0 +1,73 @@
+INTRODUCTION
+
+Geomyidae has support for running scripts on each request, which will generate
+dynamic content.
+
+There are two modes: standard cgi and dynamic cgi.
+(»CGI« as name was just taken, because that's easier to compare to the web.)
+
+
+PERMISSIONS
+
+The scripts are run using the permissions of geomyidae. It is adived to use
+the -g and -u option of gemoyidae.
+
+
+BEFOREHAND
+
+In these examples C: is what the client sends and S: what the server is
+sending.
+
+
+CALLING CONVENTION
+
+	% $gopherroot/test.cgi $search $arguments
+
+	C: /test.cgi
+	-> $search = ""
+	-> $arguments = server host
+
+	C: /test.cgi	searchterm		(There is a Tab inbetween)
+	-> $search = »searchterm«
+	-> $arguments = server host
+
+	C: /test.cgi?hello=world
+	-> $search = ""
+	-> $arguments = »hello=world«
+
+	C: /test.cgi?hello=world	searchterm	(Beware! A Tab!)
+	-> $search = »searchterm«
+	-> $arguments = »hello=world«
+
+The examples should be enough for understanding it.
+
+
+STANDARD CGI
+
+The file extension »cgi« switches to this mode, where the output of the
+script is not interpreted at all by the server and the client needs to send
+raw Gopher menus/files.
+
+	% cat test.cgi
+	#!/bin/sh
+	echo "Hello my friend."
+	%
+
+	S: Hello my friend.
+
+
+DYNAMIC CGI
+
+For using dynamic CGI, the file needs to end in »dcgi«, which will switch on
+the interpretation of the returned lines by the script. The interpreted for-
+mat is the same as in the *.gph files.
+
+	% cat test.dcgi
+	#!/bin/sh
+	echo "[1|Some link|/somewhere|server|port]"
+	%
+
+	S: 1Some link	/somewhere	gopher.r-36.net	70
+
+Have fun!
+
