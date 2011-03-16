@@ -194,7 +194,7 @@ void
 handledcgi(int sock, char *file, char *port, char *base, char *args,
 		char *sear)
 {
-	char *p, *ln, addr[512];
+	char *p, *path, *ln, addr[512];
 	int outpipe[2];
 	Elems *el;
 
@@ -202,6 +202,15 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 
 	if(pipe(outpipe) < 0)
 		return;
+
+	path = gstrdup(file);
+	p = strrchr(path, '/');
+	if (p != nil)
+		p[1] = '\0';
+	else {
+		free(path);
+		path = nil;
+	}
 
 	p = strrchr(file, '/');
 	if(p == nil)
@@ -224,6 +233,8 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 	case 0:
 		dup2(outpipe[1], 1);
 		close(outpipe[0]);
+		if (path != nil)
+			chdir(path);
 		execl(file, p, sear, args, (char *)nil);
 	case -1:
 		break;
@@ -242,6 +253,8 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 		tprintf(sock, "\r\n.\r\n\r\n");
 
 		wait(NULL);
+		if (path != nil)
+			free(path);
 		shutdown(sock, SHUT_RDWR);
 		close(sock);
 		break;
