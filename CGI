@@ -9,7 +9,7 @@ There are two modes: standard cgi and dynamic cgi.
 
 PERMISSIONS
 
-The scripts are run using the permissions of geomyidae. It is adived to use
+The scripts are run using the permissions of geomyidae. It is adivsed to use
 the -g and -u option of gemoyidae.
 
 
@@ -21,37 +21,49 @@ sending.
 
 CALLING CONVENTION
 
+Geomyidae will call the script like this:
+
 	% $gopherroot/test.cgi $search $arguments
+
+When it is a plain request, the arguments will have these values:
 
 	C: /test.cgi
 	-> $search = ""
 	-> $arguments = server host
 
+If the request is for a type 7 search element, then the entered string by
+the user will be seen as following:
+
 	C: /test.cgi	searchterm		(There is a Tab inbetween)
 	-> $search = »searchterm«
 	-> $arguments = server host
 
-	C: /test.cgi?hello=world
+When you are trying to give your script some calling arguments, the syntax
+is:
+
+	C: /test.cgi?hello
 	-> $search = ""
-	-> $arguments = »hello=world«
+	-> $arguments = »hello«
+
+If borth ways of input are combined, the variables are set as following:
 
 	C: /test.cgi?hello=world	searchterm	(Beware! A Tab!)
 	-> $search = »searchterm«
 	-> $arguments = »hello=world«
 
-The examples should be enough for understanding it.
-
 
 STANDARD CGI
 
 The file extension »cgi« switches to this mode, where the output of the
-script is not interpreted at all by the server and the client needs to send
-raw Gopher menus/files.
+script is not interpreted at all by the server and the script needs to send
+raw content.
 
 	% cat test.cgi
 	#!/bin/sh
 	echo "Hello my friend."
 	%
+
+The client will receive:
 
 	S: Hello my friend.
 
@@ -67,7 +79,11 @@ mat is the same as in the *.gph files.
 	echo "[1|Some link|/somewhere|server|port]"
 	%
 
+Here geomyidae will interpret the *.gph format and return the valid gopher
+menu item.
+
 	S: 1Some link	/somewhere	gopher.r-36.net	70
+
 
 Have fun!
 
