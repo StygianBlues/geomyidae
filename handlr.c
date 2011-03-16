@@ -149,13 +149,22 @@ void
 handlecgi(int sock, char *file, char *port, char *base, char *args,
 		char *sear)
 {
-	char *p;
+	char *p, *path;
 
 	USED(base);
 	USED(port);
 
+	path = gstrdup(file);
+	p = strrchr(path, '/');
+	if (p != nil)
+		p[1] = '\0';
+	else {
+		free(path);
+		path = nil;
+	}
+
 	p = strrchr(file, '/');
-	if(p == nil)
+	if (p == nil)
 		p = file;
 
 	if(sear == nil)
@@ -166,11 +175,15 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 	dup2(sock, 2);
 	switch(fork()) {
 	case 0:
+		if (path != nil)
+			chdir(path);
 		execl(file, p, sear, args, (char *)nil);
 	case -1:
 		break;
 	default:
 		wait(NULL);
+		if (path != nil)
+			free(path);
 		shutdown(sock, SHUT_RDWR);
 		close(sock);
 		break;
