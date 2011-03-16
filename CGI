@@ -28,8 +28,8 @@ Geomyidae will call the script like this:
 When it is a plain request, the arguments will have these values:
 
 	C: /test.cgi
-	-> $search = ""
-	-> $arguments = server host
+	-> $search = server host 
+	-> $arguments = "" 
 
 If the request is for a type 7 search element, then the entered string by
 the user will be seen as following:
