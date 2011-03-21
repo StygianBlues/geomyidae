@@ -21,46 +21,33 @@
 
 void
 handledir(int sock, char *path, char *port, char *base, char *args,
-		char *sear)
+		char *sear, char *ohost)
 {
-	char *pa, *file, *e, *addr, *par, *b;
+	char *pa, *file, *e, *par, *b;
 	struct dirent **dirent;
 	int ndir, i;
 	struct stat st;
 	filetype *type;
 
 	USED(sear);
-	addr = nil;
 
 	pa = gstrdup(path);
 	e = strrchr(pa, '/');
 	if(e != nil) {
 		*e = '\0';
 
-		if(args == nil) {
-			addr = gmallocz(512, 2);
-                        if(gethostname(addr, 512) == -1) {
-                                perror("gethostname");
-				free(addr);
-				free(pa);
-                                return;
-                        }
-		} else
-			addr = gstrdup(args);
-
                 par = gstrdup(pa);
                 b = strrchr(par + strlen(base), '/');
                 if(b != nil) {
 			*b = '\0';
                         tprintf(sock, "1..\t%s\t%s\t%s\r\n",
-                                par + strlen(base), addr, port);
+                                par + strlen(base), ohost, port);
                 }
 		free(par);
 
 		ndir = scandir(pa, &dirent, 0, alphasort);
 		if(ndir < 0) {
 			perror("scandir");
-			free(addr);
 			free(pa);
 			return;
 		} else {
@@ -77,7 +64,7 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 					type = gettype("index.gph");
 				e = file + strlen(base);
 				tprintf(sock, "%c%s\t%s\t%s\t%s\r\n", *type->type,
-					dirent[i]->d_name, e, addr, port);
+					dirent[i]->d_name, e, ohost, port);
 				free(file);
 				free(dirent[i]);
 			}
@@ -86,18 +73,15 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 		tprintf(sock, "\r\n");
 	}
 
-	if(addr != nil)
-		free(addr);
 	free(pa);
 }
 
 void
 handlegph(int sock, char *file, char *port, char *base, char *args,
-		char *sear)
+		char *sear, char *ohost)
 {
 	Indexs *act;
 	int i;
-	char addr[512];
 
 	USED(base);
 	USED(args);
@@ -105,16 +89,8 @@ handlegph(int sock, char *file, char *port, char *base, char *args,
 
 	act = scanfile(file);
 	if(act != nil) {
-                if(args == nil) {
-                        if(gethostname(addr, sizeof(addr)) == -1) {
-                                perror("gethostname");
-                                return;
-                        }
-                } else
-                        snprintf(addr, sizeof(addr), "%s", args);
-
 		for(i = 0; i < act->num; i++) {
-			printelem(sock, act->n[i], addr, port);
+			printelem(sock, act->n[i], ohost, port);
 			freeelem(act->n[i]);
 			act->n[i] = nil;
 		}
@@ -126,7 +102,7 @@ handlegph(int sock, char *file, char *port, char *base, char *args,
 
 void
 handlebin(int sock, char *file, char *port, char *base, char *args,
-		char *sear)
+		char *sear, char *ohost)
 {
 	char sendb[1024];
 	int len, fd;
@@ -136,6 +112,7 @@ handlebin(int sock, char *file, char *port, char *base, char *args,
 	USED(base);
 	USED(args);
 	USED(sear);
+	USED(ohost);
 
 	fd = open(file, O_RDONLY);
 	if(fd >= 0) {
@@ -147,7 +124,7 @@ handlebin(int sock, char *file, char *port, char *base, char *args,
 
 void
 handlecgi(int sock, char *file, char *port, char *base, char *args,
-		char *sear)
+		char *sear, char *ohost)
 {
 	char *p, *path;
 
@@ -169,6 +146,8 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 
 	if(sear == nil)
 		sear = "";
+	if(args == nil)
+		args = "";
 
 	dup2(sock, 0);
 	dup2(sock, 1);
@@ -177,7 +156,7 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 	case 0:
 		if (path != nil)
 			chdir(path);
-		execl(file, p, sear, args, (char *)nil);
+		execl(file, p, sear, args, ohost, port, (char *)nil);
 	case -1:
 		break;
 	default:
@@ -192,9 +171,9 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 
 void
 handledcgi(int sock, char *file, char *port, char *base, char *args,
-		char *sear)
+		char *sear, char *ohost)
 {
-	char *p, *path, *ln, addr[512];
+	char *p, *path, *ln;
 	int outpipe[2];
 	Elems *el;
 
@@ -216,16 +195,10 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 	if(p == nil)
 		p = file;
 
-	if(args == nil) {
-		if(gethostname(addr, sizeof(addr)) == -1) {
-			perror("gethostname");
-			return;
-		}
-	} else
-		snprintf(addr, sizeof(addr), "%s", args);
-
 	if(sear == nil)
 		sear = "";
+	if(args == nil)
+		args = "";
 
 	dup2(sock, 0);
 	dup2(sock, 2);
@@ -235,7 +208,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 		close(outpipe[0]);
 		if (path != nil)
 			chdir(path);
-		execl(file, p, sear, args, (char *)nil);
+		execl(file, p, sear, args, ohost, port, (char *)nil);
 	case -1:
 		break;
 	default:
@@ -247,7 +220,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 			if (el == nil)
 				continue;
 
-			printelem(sock, el, addr, port);
+			printelem(sock, el, ohost, port);
 			freeelem(el);
 		}
 		tprintf(sock, "\r\n.\r\n\r\n");
@@ -260,3 +233,4 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 		break;
 	}
 }
+

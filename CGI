@@ -23,20 +23,24 @@ CALLING CONVENTION
 
 Geomyidae will call the script like this:
 
-	% $gopherroot/test.cgi $search $arguments
+	% $gopherroot/test.cgi $search $arguments $host $port
 
 When it is a plain request, the arguments will have these values:
 
 	C: /test.cgi
-	-> $search = server host 
+	-> $search = "" 
 	-> $arguments = "" 
+	-> $host = server host
+	-> $port = server port
 
 If the request is for a type 7 search element, then the entered string by
 the user will be seen as following:
 
 	C: /test.cgi	searchterm		(There is a Tab inbetween)
 	-> $search = »searchterm«
-	-> $arguments = server host
+	-> $arguments = ""
+	-> $host = server host
+	-> $port = server port 
 
 When you are trying to give your script some calling arguments, the syntax
 is:
@@ -44,12 +48,16 @@ is:
 	C: /test.cgi?hello
 	-> $search = ""
 	-> $arguments = »hello«
+	-> $host = server host
+	-> $port = server port
 
 If borth ways of input are combined, the variables are set as following:
 
 	C: /test.cgi?hello=world	searchterm	(Beware! A Tab!)
 	-> $search = »searchterm«
 	-> $arguments = »hello=world«
+	-> $host = server host
+	-> $port = server port
 
 
 STANDARD CGI
