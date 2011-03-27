@@ -16,7 +16,7 @@ command="/usr/pkg/sbin/${name}"
 #####################################################
 #
 #LOGFILE="-l /var/log/gopherd.log"
-#LOGLEVEL="-v 15"
+#LOGLEVEL="-v 7"
 #HTDOCS="-b /var/gopher"
 #PORT="-p 70"
 #SPORT="-o 70"
