@@ -27,7 +27,7 @@ typedef struct filetype filetype;
 struct filetype {
         char *end;
         char *type;
-        void (* f)(int, char *, char *, char *, char *, char *);
+        void (* f)(int, char *, char *, char *, char *, char *, char *);
 };
 
 filetype *gettype(char *filename);

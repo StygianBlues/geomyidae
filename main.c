@@ -137,6 +137,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	bzero(&dir, sizeof(dir));
 	bzero(recvb, sizeof(recvb));
 	bzero(recvc, sizeof(recvc));
+	args = nil;
 
 	len = recv(sock, recvb, sizeof(recvb)-1, 0);
 	if(len > 0) {
@@ -164,8 +165,6 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	args = strchr(recvb, '?');
 	if(args != nil)
 		*args++ = '\0';
-	else
-		args = ohost;
 
 	securepath(recvb, len - 2);
 	snprintf(path, sizeof(path), "%s%s", base, recvb);
@@ -182,10 +181,10 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 		if(c == nil)
 			c = path;
 		type = gettype(c);
-		type->f(sock, path, port, base, args, sear);
+		type->f(sock, path, port, base, args, sear, ohost);
 	} else {
 		if(S_ISDIR(dir.st_mode)) {
-			handledir(sock, path, port, base, args, sear);
+			handledir(sock, path, port, base, args, sear, ohost);
 			if(loglvl & DIRS)
 				logentry(clienth, clientp, recvc,
 							"dir listing");
@@ -307,6 +306,16 @@ main(int argc, char *argv[])
 		usage();
 	} ARGEND;
 
+	if(ohost == nil) {
+		ohost = gmallocz(513, 2);
+		if(gethostname(ohost, 512) < 0) {
+			perror("gethostname");
+			free(ohost);
+			return 1;
+		}
+	} else
+		ohost = gstrdup(ohost);
+
 	if(group != nil) {
 		if((gr = getgrnam(group)) == nil) {
 			perror("no such group");
@@ -419,6 +428,8 @@ main(int argc, char *argv[])
 	close(listfd);
 	if(logfile != nil)
 		stoplogging(glfd);
+	free(ohost);
+
 	return 0;
 }
 
