@@ -1,6 +1,6 @@
 .\" geomyidae.8 handcrafted in GNU groff -mdoc using nvi
 .\"
-.Dd March 9, 2008
+.Dd March 26, 2011
 .Dt GEOMYIDAE 8
 .Os
 .
@@ -41,7 +41,7 @@ by default), then run the
 .Sq "make ; make install"
 commands.  The resulting executable should be run by root.
 .
-.Ss Installation example:
+.Ss Basic Installation and Startup:
 .Pp
 .Bd -literal
      % wget http://www.r-36.net/src/geomyidae/geomyidae-current.tgz;
@@ -52,24 +52,24 @@ commands.  The resulting executable should be run by root.
      % sudo cp index.gph /var/gopher;
      % sudo geomyidae -l /var/log/geomyidae.log -b /var/gopher -p 70;
      % tail -f /var/log/geomyidae.log;
-     #
-     # Use whatever gopher client you like to gopher to
-     # gopher://localhost
-     #
-     # Have fun!
+
+     Use whatever gopher client you like (ie. lynx) to browse:
+     % lynx gopher://localhost
 .Ed
 .
 .Ss Running
-Geomyidae should normally be started by root.  Though, it can be started
+geomyidae should normally be started by root, although it can be started
 by a regular user provided that the base directory and its contents are owned
-by the same user.  Geomyidae will only serve content within the base directory
+by the same user.  geomyidae will only serve content within the base directory
 tree and will drop privileges to the
 .Fl u Ar user
 and
 .Fl g Ar group
 values if set.  See
 .Ic OPTIONS
-below for specifics.
+below for specifics.  Launching geomyidae automatically is best done via a UNIX
+run-time (rc.d) script; several sample rc.d scripts are included in the geomyidae
+source archive.
 .
 .Sh OPTIONS
 geomyidae options and default settings:
@@ -77,13 +77,13 @@ geomyidae options and default settings:
 .Bl -tag -width ".Fl test Ao Ar string Ac"
 .
 .It Fl d
-Don't fork into background.
+Don't fork into background
 .
 .It Fl l Ar logfile
-Specify the file where the log output will be written (default: no default).
+Specify file where log output is written (no default)
 .
 .It Fl v Ar loglevel
-Set the logging level (default: 15).
+Set the logging level (default: 7)
 .
 .Bd -literal
 Loglevels:
@@ -104,7 +104,7 @@ Root directory to serve (default: /var/gopher)
 Port geomyidae should listen on (default: 70)
 .
 .It Fl o Ar sport
-Port geomyidae displays within base directory (default: 70).
+Port geomyidae displays within base directory (default: 70)
 .
 Use in conjunction with
 .Ic -p
@@ -182,9 +182,11 @@ Note: geomyidae doesn't require "informational" text to be formally
 Typed as "[i|...]"; any line
 .Em not
 beginning with "[" is treated as informational, greatly simplifying the
-formatting of index.gph files.
-If a line begins with "t", this "t" is left out. This measurement is
-there to allow lines "informational" text beginning with "[".
+formatting of index.gph files.  However, if a line begins with a "t", this
+"t" is left out.  This quirk is there to allow "informational" text lines
+beginning with a "[" to display.  For dynamically generated index files
+it may be desirable to either formally Type informational text or run
+it through a filter to add a second "t" - .ie sed 's/^t/&&/' .
 .
 .It Ic <desc>
 = description of gopher item. Most printable characters should work.
@@ -209,7 +211,7 @@ of optional [i]nformational Item (line 2) for vertical space insertion:
 .Pp
 .Bd -literal -offset indent
 Welcome to Frog.bog
-[i||||]
+[i||Err||]
 [0|About this server|about.txt|frog.bog|70]
 [0|Daily Log|/dtail.cgi|frog.bog|70]
 [1|Phlog: like a blog, but not|/PHLOG|frog.bog|70]
@@ -221,7 +223,7 @@ Links and Searches
 [h|Go to NetBSD.org|URL:http://netbsd.org|frog.bog|70]
 [7|Query US Weather by Zipcode|/weather.cgi?|frog.bog|70]
 [7|Search Veronica II|/v2/vs|gopher.floodgap.com|70]
-[8|Telnet to SDF Public Access Unix System|new|freeshell.org|23]
+[8|Telnet to SDF Public Access Unix System|null|freeshell.org|23]
 .Ed
 .
 .Pp
@@ -256,44 +258,63 @@ Search Veronica II
 Telnet to SDF Public Access Unix System
 .El
 .Pp
-.Sh USING DYNAMIC CONTENT 
-Dynamic content can be generated under geomyidae by simply creating a file
-in for form of
-.Ic <name>.cgi
-in a directory that is being served. Such files are run as a shell script.
-(See below for description.)
+.Sh DYNAMIC CONTENT (gopher CGI)
+There are two options provided for dynamic content creation: standard CGI (
+.Ic .cgi
+) and dynamic CGI
+(
+.Ic .dcgi
+). Despite the names, both can accept input and generate dynamic content;
+the only difference is the latter re-formats it's output so it appears to
+the server as a standard geomyidae index (.gph) file. This makes the
+creation of on-the-fly gopher directories much easier (see examples).
+All scripts must be under the gopher root directory and be executable by
+the same user:group running geomyidae.  Consequently, it is best to use
+the -u and -g server options to avoid running as root.
 .Pp
-ex. dtail.cgi - prints daily log entries
+Both .cgi and .dcgi scripts have the same argument call structure (as seen by geomyidae):
+.Pp
+.D1  executable.[d]cgi $search $arguments $host $port
+.Pp
+where
+.Pp
+.D1 search = query string (type 7) or Qo Qc (type 0)
+.D1 arguments = Qo Qc
+.D1 host = server's hostname ("localhost" by default)
+.D1 port = server's port ("70" by default)
+.Pp
+All terms are tab-separated (per gopher protocol) which can cause some
+surprises depending on how a script is written.  See the CGI file (included
+in the geomyidae source archive) for further elaboration.
+.
+.Ss Some CGI Examples
+.Pp
+Note: these are a very simple examples with no fitness checks with respect
+to safety/security.
+.Pp
+ex. uptime.cgi - standard CGI, no queries
 .
 .Bd -literal -offset indent
-#!/bin/sh -e
-echo "Logged activity for `date '+%A, %B %d, %Y'` :"
-echo "==============================================="
-LOG="/var/log/gopherd.log"
-DATE=`date "+%a %b %d"`
-/usr/bin/grep "$DATE" $LOG
+#!/bin/sh
+#  uptime.cgi - prints system uptime(1)
+/usr/bin/uptime
 exit 0
 .Ed
 .
 .Pp
-Geomyidae supports two variable queries.  The basic form is
+Call the above with the following index.gph entry:
 .Pp
-.D1 executable.cgi{argv[1]}?{argv[2]}
-.Pp
-where
-.Pp
-.D1 argv[1] = strings (everything before the '?' in the query)
-.D1 argv[2] = arguments (everything behind the '?' in the query)
+.D1 [0|System Uptime|/uptime.cgi|frog.bog|70]
 .Pp
 A search query request must have an item Type of "7" to be called
-from an index.gph file.  It may also need a "?" suffix in the <path>
-field.
-.
+from an index.gph file.  It also needs a "?" suffix in the <path>
+field:
 .Pp
-ex. hello.cgi - say hello to user
+ex. hello.cgi - standard CGI with query
 .
 .Bd -literal -offset indent
 #!/bin/sh
+#  hello.cgi - welcome user
 NAME=$1
 echo ""
 echo Hello $NAME - welcome to Frog.bog
@@ -312,11 +333,57 @@ query:
 .Pp
 .D1 % snarf Qo gopher://frog.bog/7/hello.cgi?Christoph Qc -
 .D1 Hello Christoph - welcome to Frog.bog
-.Dl %
 .
+.Pp
+Dynamic CGI entries are similar to above except that the script
+needs to create output as described in the 
+.Ic FORMATTING
+section:
+.Pp
+ex. jughead.dcgi - dynamic CGI script with query
+.
+.Bd -literal -offset indent
+#!/bin/sh
+# jughead.dcgi - jughead-like local gopher search
+KWRD="$1"
+ARCHIVE="/var/gopher/textfiles/"
+echo "[i|Search results for \\"${KWRD}\\":|Err||]"
+echo "[i|----|Err||]"
+# grep(1) recursive, case-insensitive KWRD search of ARCHIVE: 
+for RESULT in $(/usr/bin/grep -i -l -m1 ${KWRD} -r $ARCHIVE)
+do
+        DESC=$(/usr/bin/basename ${RESULT})
+        PATH=$(echo "$RESULT" | /usr/bin/sed 's/^\\/var\\/gopher//')
+        echo "[0|${DESC}|${PATH}|frog.bog|70]"
+done
+exit 0
+.Ed
+.
+.Pp
+Call the above with the following index.gph entry:
+.Pp
+.D1 [7|Search this Gopher|/jughead.dcgi?|frog.bog|70]
+.Pp
+A successful query might look like this:
+.Pp
+.Bl -tag -width ".It Ic WIDTHS" -compact -offset indent
+.D1 Search results for Qo fubar Qc :
+.D1 ----
+.It Ic (FILE)
+How_Things_Break.txt
+.It Ic (FILE)
+Origins_of_Words.txt
+.It Ic (FILE)
+Phrases_of_the_Ages.txt
+.El
+.
+.Pp
+Care should to be exercised to avoid creating miss-Typed entries, unwanted
+recursions, and/or unintended writes in the working directory.
+.Pp
 .Sh LOG FILES
 .Pp
-The log file (/var/log/gopherd.log is default) has the following structure:
+The log file (ie. /var/log/gopherd.log) has the following structure:
 .
 .Pp
 .Ic [<date>|<IP:port>] <item path> <query> (<status>)
@@ -371,32 +438,32 @@ ex. - some common status entries:
 .El
 .
 .Sh FILES
-README, LICENSE, index.gph
+README, LICENSE, CGI, index.gph, rc.d/
 .
 .Sh "SEE ALSO"
 Links for further information on gopher:
 .Pp
+.D1 Pa gopher://gopher.floodgap.com
 .D1 Pa gopher://gopher.gopherproject.org
-.D1 Pa http://www.gopherproject.org
 .Pp
 .Sh STANDARDS
 .Em Internet RFC 1436
 .
 .Sh HISTORY
-Geomyidae started as a Linux/BSD port of the Plan 9 gopherd_P9 server.
+geomyidae started as a Linux/BSD port of the Plan 9 gopherd_P9 server.
 Originally called gopherd_BSD, the name was later changed to Geomyidae
 (latin), the taxonomic family of burrowing rodents known as "pocket
-gophers" which are in fact the true gophers. Because of inconsitencies
+gophers" which are in fact the true gophers. Due to inconsistencies
 and the UNIX culture, the name was changed to lowercase in 2010.
 .
 .Sh AUTHORS
 See LICENSE file for authors in the distribution.
 .
 .Sh LICENSE
-Geomyidae is released under the MIT/X Consortium License.
+geomyidae is released under the MIT/X Consortium License.
 .
 .Sh BUGS
-Geomyidae occasionally aborts silently if too many simultaneous
+geomyidae occasionally aborts silently if too many simultaneous
 requests are made.  Limiting gopher traffic via firewall rules
 may help.
 .Pp
