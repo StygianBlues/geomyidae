@@ -197,12 +197,15 @@ items not intended to be served.
 .
 .It Ic <host>
 = hostname or IP hosting the gopher item. Must be resolvable for the
-intended clients.
-.
+intended clients. If this is set to
+.Qq "server"
+, the server's hostname is used.
 .It Ic <port>
 = TCP port number ( usually 70)
 .
-May be omitted if defaults are used.
+If this is set to
+.Qq "port"
+, the default port of the server is used.
 .El
 .
 .Ss index.gph Example
