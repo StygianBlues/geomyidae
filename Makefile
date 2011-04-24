@@ -22,7 +22,7 @@ options:
 	@echo "LDFLAGS  = ${LDFLAGS}"
 	@echo "CC       = ${CC}"
 
-.c.o :
+.c.o:
 	@echo CC $<
 	@${CC} ${CFLAGS} -c $<
 
@@ -32,7 +32,7 @@ ${NAME}: ${OBJ}
 	@echo CC -o $@
 	@${CC} -o $@ ${OBJ} ${LDFLAGS}
 
-clean :
+clean:
 	@echo cleaning
 	@rm -f ${NAME} ${OBJ} ${NAME}-${VERSIOn}.tar.gz 
 
