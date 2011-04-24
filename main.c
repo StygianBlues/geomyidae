@@ -254,7 +254,7 @@ main(int argc, char *argv[])
 	struct addrinfo hints, *ai, *rp;
 	struct sockaddr_storage clt;
 	socklen_t cltlen;
-	int sock, dofork;
+	int sock, dofork, on;
 	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV];
 	char *user, *group, *bindip, *ohost, *sport;
 	struct passwd *us;
@@ -355,11 +355,16 @@ main(int argc, char *argv[])
 		return 1;
 	}
 
+	on = 1;
 	for(rp = ai; rp != nil; rp = rp->ai_next) {
 		listfd = socket(rp->ai_family, rp->ai_socktype,
 				rp->ai_protocol);
 		if(listfd < 0)
 			continue;
+		if(setsockopt(listfd, SOL_SOCKET, SO_REUSEADDR, &on,
+					sizeof(on)) < 0) {
+			break;
+		}
 		if(bind(listfd, rp->ai_addr, rp->ai_addrlen) == 0)
 			break;
 		close(listfd);
