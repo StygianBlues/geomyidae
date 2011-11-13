@@ -70,7 +70,7 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 			}
 			free(dirent);
 		}
-		tprintf(sock, "\r\n");
+		tprintf(sock, ".\r\n");
 	}
 
 	free(pa);
@@ -94,7 +94,7 @@ handlegph(int sock, char *file, char *port, char *base, char *args,
 			freeelem(act->n[i]);
 			act->n[i] = nil;
 		}
-		tprintf(sock, "\r\n.\r\n\r\n");
+		tprintf(sock, ".\r\n");
 
 		freeindex(act);
 	}
@@ -223,7 +223,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 			printelem(sock, el, ohost, port);
 			freeelem(el);
 		}
-		tprintf(sock, "\r\n.\r\n\r\n");
+		tprintf(sock, ".\r\n");
 
 		wait(NULL);
 		if (path != nil)

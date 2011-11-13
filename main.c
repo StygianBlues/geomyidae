@@ -191,7 +191,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 			return;
 		}
 
-		tprintf(sock, err, recvc); 
+		tprintf(sock, err, recvc);
 		if(loglvl & ERRORS)
 			logentry(clienth, clientp, recvc, "not found");
 	}
