@@ -218,7 +218,7 @@ sighandler(int sig)
 			shutdown(listfd, SHUT_RDWR);
 			close(listfd);
 		}
-		exit(EXIT_SUCCESS);
+		exit(0);
 		break;
 	default:
 		break;
