@@ -134,9 +134,9 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	int len, fd;
 	filetype *type;
 
-	bzero(&dir, sizeof(dir));
-	bzero(recvb, sizeof(recvb));
-	bzero(recvc, sizeof(recvc));
+	memset(&dir, 0, sizeof(dir));
+	memset(recvb, 0, sizeof(recvb));
+	memset(recvc, 0, sizeof(recvc));
 	args = nil;
 
 	len = recv(sock, recvb, sizeof(recvb)-1, 0);
@@ -341,7 +341,7 @@ main(int argc, char *argv[])
 		}
 	}
 
-	bzero(&hints, sizeof(hints));
+	memset(&hints, 0, sizeof(hints));
 	hints.ai_flags = AI_PASSIVE;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
