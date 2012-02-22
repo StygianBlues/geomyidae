@@ -235,6 +235,8 @@ initsignals(void)
 	signal(SIGABRT, sighandler);
 	signal(SIGTERM, sighandler);
 	signal(SIGKILL, sighandler);
+
+	signal(SIGPIPE, SIG_IGN);
 }
 
 void
