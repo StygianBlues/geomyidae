@@ -140,12 +140,15 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	args = nil;
 
 	len = recv(sock, recvb, sizeof(recvb)-1, 0);
-	if(len > 0) {
-		if(recvb[len - 2] == '\r')
-			recvb[len - 2] = '\0';
-		if(recvb[len - 1] == '\n')
-			recvb[len - 1] = '\0';
-	}
+	if (len <= 0)
+		return;
+
+	c = strchr(recvb, '\r');
+	if(c)
+		c[0] = '\0';
+	c = strchr(recvb, '\n');
+	if(c)
+		c[0] = '\0';
 	memmove(recvc, recvb, len+1);
 
 	if(!strncmp(recvb, "URL:", 4)) {
