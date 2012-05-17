@@ -19,7 +19,7 @@
 #include "handlr.h"
 
 filetype type[] = {
-	{"default", "0", handlebin},
+	{"default", "9", handlebin},
 	{"gph", "1", handlegph},
 	{"cgi", "0", handlecgi},
 	{"dcgi", "1", handledcgi},
