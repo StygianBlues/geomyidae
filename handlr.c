@@ -163,8 +163,6 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 		wait(NULL);
 		if (path != nil)
 			free(path);
-		shutdown(sock, SHUT_RDWR);
-		close(sock);
 		break;
 	}
 }
@@ -228,8 +226,6 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 		wait(NULL);
 		if (path != nil)
 			free(path);
-		shutdown(sock, SHUT_RDWR);
-		close(sock);
 		break;
 	}
 }

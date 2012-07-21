@@ -421,9 +421,15 @@ main(int argc, char *argv[])
 		switch(fork()) {
 		case -1:
 			perror("fork");
-			close(sock);
+			shutdown(sock, SHUT_RDWR);
 			break;
 		case 0:
+			signal(SIGHUP, SIG_DFL);
+			signal(SIGQUIT, SIG_DFL);
+			signal(SIGINT, SIG_DFL);
+			signal(SIGTERM, SIG_DFL);
+			signal(SIGALRM, SIG_DFL);
+
 			handlerequest(sock, base, ohost, sport, clienth,
 						clientp);
 			shutdown(sock, SHUT_RDWR);
@@ -432,6 +438,7 @@ main(int argc, char *argv[])
 		default:
 			break;
 		}
+		close(sock);
 	}
 
 	shutdown(listfd, SHUT_RDWR);
