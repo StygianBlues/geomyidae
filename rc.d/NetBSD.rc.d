@@ -1,21 +1,22 @@
 #!/bin/sh
 #
 
-# REQUIRE: local
 # PROVIDE: geomyidae
+# REQUIRE: LOGIN
+# KEYWORD: shutdown
 
 $_rc_subr_loaded . /etc/rc.subr
 
 name="geomyidae"
 rcvar=$name
-command="/usr/pkg/sbin/${name}"
+command="/usr/local/bin/${name}"
 
 #####################################################
 # Geomyidae Options Section - "?" => geomyidae(8)   #
 #  Uncomment & define options (defaults are shown)  #
 #####################################################
 #
-#LOGFILE="-l /var/log/gopherd.log"
+#LOGFILE="-l /var/log/gopherlog"
 #LOGLEVEL="-v 7"
 #HTDOCS="-b /var/gopher"
 #PORT="-p 70"
@@ -26,10 +27,11 @@ command="/usr/pkg/sbin/${name}"
 #IP="-i 127.0.0.1"
 
 ######################################################
-# Now remove any UNDEFINED options from line below:  #
+# Next, add all DEFINED options to command_args=     #
 ######################################################
 #
-command_args="$LOGFILE $LOGLEVEL $HTDOCS $PORT $SPORT $USR $GRP $HOST $IP"
+#command_args="$LOGFILE $LOGLEVEL $HTDOCS $PORT $SPORT $USR $GRP $HOST $IP"
+command_args=""
 
 
 ######################################################
@@ -43,7 +45,7 @@ command_args="$LOGFILE $LOGLEVEL $HTDOCS $PORT $SPORT $USR $GRP $HOST $IP"
 #{
 #        echo "Starting $name"
 #        $command $command_args
-#        pgrep -x $name > $pidfile
+#        pgrep -n $name > $pidfile
 #}
 
 ######################################################
