@@ -242,6 +242,40 @@ initsignals(void)
 	signal(SIGPIPE, SIG_IGN);
 }
 
+int
+getlistenfd(struct addrinfo *hints, char *bindip, char *port)
+{
+	struct addrinfo *ai, *rp;
+	int on, listfd;
+
+	listfd = -1;
+
+	if(getaddrinfo(bindip, port, hints, &ai))
+		return -1;
+	if(ai == nil)
+		return -1;
+
+	on = 1;
+	for(rp = ai; rp != nil; rp = rp->ai_next) {
+		listfd = socket(rp->ai_family, rp->ai_socktype,
+				rp->ai_protocol);
+		if(listfd < 0)
+			continue;
+		if(setsockopt(listfd, SOL_SOCKET, SO_REUSEADDR, &on,
+					sizeof(on)) < 0) {
+			break;
+		}
+		if(bind(listfd, rp->ai_addr, rp->ai_addrlen) == 0)
+			break;
+		close(listfd);
+	}
+	if(rp == nil)
+		return -1;
+	freeaddrinfo(ai);
+
+	return listfd;
+}
+
 void
 usage(void)
 {
@@ -256,10 +290,10 @@ usage(void)
 int
 main(int argc, char *argv[])
 {
-	struct addrinfo hints, *ai, *rp;
+	struct addrinfo hints;
 	struct sockaddr_storage clt;
 	socklen_t cltlen;
-	int sock, dofork, on;
+	int sock, dofork, v4, v6;
 	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV];
 	char *user, *group, *bindip, *ohost, *sport;
 	struct passwd *us;
@@ -275,8 +309,16 @@ main(int argc, char *argv[])
 	bindip = nil;
 	ohost = nil;
 	sport = port;
+	v4 = 1;
+	v6 = 1;
 
 	ARGBEGIN {
+	case '4':
+		v6 = 0;
+		break;
+	case '6':
+		v4 = 0;
+		break;
 	case 'b':
 		base = EARGF(usage());
 		break;
@@ -318,8 +360,9 @@ main(int argc, char *argv[])
 			free(ohost);
 			return 1;
 		}
-	} else
+	} else {
 		ohost = gstrdup(ohost);
+	}
 
 	if(group != nil) {
 		if((gr = getgrnam(group)) == nil) {
@@ -349,36 +392,29 @@ main(int argc, char *argv[])
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_flags = AI_PASSIVE;
 	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	hints.ai_family = AF_INET;
-	if(getaddrinfo(bindip, port, &hints, &ai)) {
-		perror("getaddrinfo");
-		return 1;
-	}
-	if(ai == nil) {
-		perror("getaddrinfo");
-		return 1;
-	}
+	if(bindip)
+		hints.ai_flags |= AI_CANONNAME;
 
-	on = 1;
-	for(rp = ai; rp != nil; rp = rp->ai_next) {
-		listfd = socket(rp->ai_family, rp->ai_socktype,
-				rp->ai_protocol);
-		if(listfd < 0)
-			continue;
-		if(setsockopt(listfd, SOL_SOCKET, SO_REUSEADDR, &on,
-					sizeof(on)) < 0) {
-			break;
+	if(v6) {
+		hints.ai_family = PF_INET6;
+		listfd = getlistenfd(&hints, bindip, port);
+		if(!v4 && listfd < 0) {
+			perror("getlistenfd");
+			return 1;
 		}
-		if(bind(listfd, rp->ai_addr, rp->ai_addrlen) == 0)
-			break;
-		close(listfd);
 	}
-	if(rp == nil) {
-		perror("getaddrinfo");
+	if(v4) {
+		hints.ai_family = PF_INET;
+		listfd = getlistenfd(&hints, bindip, port);
+		if(listfd < 0) {
+			perror("getlistenfd");
+			return 1;
+		}
+	}
+	if(listfd < 0) {
+		perror("You did not specify and TCP protocol.");
 		return 1;
 	}
-	freeaddrinfo(ai);
 
 	if(listen(listfd, 255)) {
 		perror("listen");
@@ -416,7 +452,7 @@ main(int argc, char *argv[])
 
 		getnameinfo((struct sockaddr *)&clt, cltlen, clienth,
 				sizeof(clienth), clientp, sizeof(clientp),
-				NI_NUMERICHOST);
+				NI_NUMERICHOST|NI_NUMERICSERV);
 
 		switch(fork()) {
 		case -1:
