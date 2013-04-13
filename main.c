@@ -403,11 +403,8 @@ main(int argc, char *argv[])
 			perror("getlistenfd6");
 			return 1;
 		}
-		if(listfd < 0)
-			perror("getlistenfd6");
 	}
 	if(v4 && listfd < 0) {
-		printf("In v4\n");
 		hints.ai_family = PF_INET;
 		listfd = getlistenfd(&hints, bindip, port);
 		if(listfd < 0) {
