@@ -395,19 +395,23 @@ main(int argc, char *argv[])
 	if(bindip)
 		hints.ai_flags |= AI_CANONNAME;
 
+	listfd = -1;
 	if(v6) {
 		hints.ai_family = PF_INET6;
 		listfd = getlistenfd(&hints, bindip, port);
 		if(!v4 && listfd < 0) {
-			perror("getlistenfd");
+			perror("getlistenfd6");
 			return 1;
 		}
+		if(listfd < 0)
+			perror("getlistenfd6");
 	}
-	if(v4) {
+	if(v4 && listfd < 0) {
+		printf("In v4\n");
 		hints.ai_family = PF_INET;
 		listfd = getlistenfd(&hints, bindip, port);
 		if(listfd < 0) {
-			perror("getlistenfd");
+			perror("getlistenfd4");
 			return 1;
 		}
 	}

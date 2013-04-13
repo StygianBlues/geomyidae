@@ -11,6 +11,8 @@
 .Sh SYNOPSIS
 .Nm
 .Bk -words
+.Op Fl 4
+.Op Fl 6
 .Op Fl d
 .Op Fl l Ar logfile
 .Op Fl v Ar loglevel
@@ -76,6 +78,12 @@ source archive.
 .Sh OPTIONS
 geomyidae options and default settings:
 .Bl -tag -width Ds
+.
+.It Fl 4
+Only use IPv4.
+.
+.It Fl 6
+Only use IPv6.
 .
 .It Fl d
 Don't fork into background
