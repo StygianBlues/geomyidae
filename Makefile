@@ -5,7 +5,7 @@ VERSION = 0.26.3
 
 PREFIX ?= /usr
 BINDIR ?= $(PREFIX)/bin
-MANDIR ?= $(PREFIX)/man/man8
+MANDIR ?= $(PREFIX)/share/man8
 
 CFLAGS += -O2 -Wall -I. -I/usr/include 
 LDFLAGS += -L/usr/lib -L. -lc
