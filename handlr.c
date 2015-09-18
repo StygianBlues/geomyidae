@@ -105,7 +105,7 @@ handlebin(int sock, char *file, char *port, char *base, char *args,
 		char *sear, char *ohost)
 {
 	char sendb[1024];
-	int len, fd;
+	int len, fd, sent;
 
 	len = -1;
 	USED(port);
@@ -116,8 +116,14 @@ handlebin(int sock, char *file, char *port, char *base, char *args,
 
 	fd = open(file, O_RDONLY);
 	if(fd >= 0) {
-		while((len = read(fd, sendb, sizeof(sendb))) > 0)
-			send(sock, sendb, len, 0);
+		while((len = read(fd, sendb, sizeof(sendb))) > 0) {
+			while(len > 0) {
+				sent = send(sock, sendb, len, 0);
+				if(sent < 0)
+					break;
+				len -= sent;
+			}
+		}
 		close(fd);
 	}
 }
