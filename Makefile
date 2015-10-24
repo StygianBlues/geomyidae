@@ -9,7 +9,7 @@ MANDIR ?= $(PREFIX)/share/man/man8
 
 CFLAGS += -O2 -Wall -I. -I/usr/include 
 LDFLAGS += -L/usr/lib -L. -lc
-: CC = cc
+CC = cc
 
 SRC = main.c ind.c handlr.c 
 OBJ = ${SRC:.c=.o}
