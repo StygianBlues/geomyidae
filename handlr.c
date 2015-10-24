@@ -29,6 +29,7 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 	struct stat st;
 	filetype *type;
 
+	USED(args);
 	USED(sear);
 
 	pa = gstrdup(path);
