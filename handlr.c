@@ -161,8 +161,11 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 	dup2(sock, 2);
 	switch(fork()) {
 	case 0:
-		if (path != nil)
-			chdir(path);
+		if (path != nil) {
+			if (chdir(path) < 0)
+				break;
+		}
+
 		execl(file, p, sear, args, ohost, port, (char *)nil);
 	case -1:
 		break;
@@ -211,8 +214,11 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 	case 0:
 		dup2(outpipe[1], 1);
 		close(outpipe[0]);
-		if (path != nil)
-			chdir(path);
+		if (path != nil) {
+			if (chdir(path) < 0)
+				break;
+		}
+
 		execl(file, p, sear, args, ohost, port, (char *)nil);
 	case -1:
 		break;
