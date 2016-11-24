@@ -388,7 +388,7 @@ main(int argc, char *argv[])
 			return 1;
 		}
 	} else if(!dofork) {
-		glfd = 0;
+		glfd = 1;
 	}
 
 	memset(&hints, 0, sizeof(hints));
