@@ -297,7 +297,7 @@ Both .cgi and .dcgi scripts have the same argument call structure (as seen by ge
 where
 .Pp
 .D1 search = query string (type 7) or Qo Qc (type 0)
-.D1 arguments = Qo Qc
+.D1 arguments = string after Qo ? Qc in the path or Qo Qc
 .D1 host = server's hostname ("localhost" by default)
 .D1 port = server's port ("70" by default)
 .Pp
@@ -333,23 +333,24 @@ ex. hello.cgi - standard CGI with query
 #!/bin/sh
 #  hello.cgi - welcome user
 NAME=$1
+HOSTNAME=$2
 echo ""
-echo Hello $NAME - welcome to Frog.bog
+echo Hello $NAME - welcome to $HOSTNAME
 exit 0
 .Ed
 .
 .Pp
 Call the above with the following index.gph entry:
 .Pp
-.D1 [7|Hello You - Please enter your name|/hello.cgi?|frog.bog|70]
+.D1 [7|Hello You - Please enter your name|/hello.cgi?FROG.bog|frog.bog|70]
 .
 .Pp
 And do a simple
 .Xr snarf 1
 query (note the inserted TAB):
 .Pp
-.D1 % snarf Qo gopher://frog.bog/7/hello.cgi?[TAB]Christoph Qc -
-.D1 Hello Christoph - welcome to Frog.bog
+.D1 % snarf Qo gopher://frog.bog/7/hello.cgi?FROG.bog[TAB]Christoph Qc -
+.D1 Hello Christoph - welcome to FROG.bog
 .
 .Pp
 Dynamic CGI entries are similar to above except that the script
