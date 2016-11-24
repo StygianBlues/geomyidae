@@ -387,6 +387,8 @@ main(int argc, char *argv[])
 			perror("initlogging");
 			return 1;
 		}
+	} else if(!dofork) {
+		glfd = 0;
 	}
 
 	memset(&hints, 0, sizeof(hints));
