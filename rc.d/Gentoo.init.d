@@ -1,4 +1,4 @@
-#!/sbin/runscript
+#!/sbin/openrc-run
 # Copyright 1999-2010 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
@@ -6,12 +6,12 @@
 start(){
     ebegin "Starting geomyidae"
     [ -n "$GEOMYIDAE_ARGS" ] && GEOMYIDAE_ARGS="-- $GEOMYIDAE_ARGS"
-    start-stop-daemon --start --pidfile /var/run/geomyidae.pid --exec /usr/sbin/geomyidae $GEOMYIDAE_ARGS
+    start-stop-daemon -Sb -p /var/run/geomyidae.pid -x /usr/sbin/geomyidae $GEOMYIDAE_ARGS
     eend $? "Failed to start geomyidae"
 }
 
 stop(){
     ebegin "Stopping geomyidae"
-    start-stop-daemon --stop --pidfile /var/run/geomyidae.pid
+    start-stop-daemon -S -p /var/run/geomyidae.pid
     eend $? "Failed to stop geomyidae"
 }
