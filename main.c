@@ -44,7 +44,7 @@ char *logfile = nil;
 char *argv0;
 char *stdbase = "/var/gopher";
 char *stdport = "70";
-char *indexf = "/index.gph";
+char *indexf[] = {"/index.gph", "/index.cgi", "/index.dcgi"};
 char *err = "3Sorry, but the requested token '%s' could not be found.\tErr"
 	    "\tlocalhost\t70\r\n.\r\n\r\n";
 char *htredir = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -131,7 +131,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 {
 	struct stat dir;
 	char recvc[1025], recvb[1025], path[1025], *args, *sear, *c;
-	int len, fd;
+	int len, fd, i;
 	filetype *type;
 
 	memset(&dir, 0, sizeof(dir));
@@ -170,11 +170,26 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 		*args++ = '\0';
 
 	securepath(recvb, len - 2);
-	snprintf(path, sizeof(path), "%s%s", base, recvb);
-	if(stat(path, &dir) != -1 && S_ISDIR(dir.st_mode))
-		strncat(path, indexf, sizeof(path) - strlen(path));
+	if(strlen(recvb) == 0) {
+		recvb[0] = '/';
+		recvb[1] = '\0';
+	}
 
-	fd = open(path, O_RDONLY);
+	snprintf(path, sizeof(path), "%s%s", base, recvb);
+
+	fd = -1;
+	if(stat(path, &dir) != -1 && S_ISDIR(dir.st_mode)) {
+		for(i = 0; i < sizeof(indexf)/sizeof(indexf)[0]; i++) {
+			strncat(path, indexf[i], sizeof(path) - strlen(path));
+			fd = open(path, O_RDONLY);
+			if(fd >= 0)
+				break;
+			path[strlen(path)-strlen(indexf[i])] = '\0';
+		}
+	} else {
+		fd = open(path, O_RDONLY);
+	}
+
 	if(fd >= 0) {
 		close(fd);
 		if(loglvl & FILES)
