@@ -36,7 +36,7 @@ clean:
 	@echo cleaning
 	@rm -f ${NAME} ${OBJ} ${NAME}-${VERSIOn}.tar.gz 
 
-install:
+install: all
 	@echo installing executable to ${DESTDIR}${PREFIX}/bin
 	@mkdir -p ${DESTDIR}${BINDIR}
 	@cp -f ${NAME} ${DESTDIR}${BINDIR}
