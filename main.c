@@ -188,6 +188,11 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 		}
 	} else {
 		fd = open(path, O_RDONLY);
+		if(fd < 0) {
+			if(loglvl & ERRORS)
+				logentry(clienth, clientp, recvc, strerror(errno));
+			return;
+		}
 	}
 
 	if(fd >= 0) {
