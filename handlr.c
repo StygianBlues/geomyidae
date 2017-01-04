@@ -33,46 +33,45 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 	USED(sear);
 
 	pa = gstrdup(path);
-	e = strrchr(pa, '/');
-	if(e != nil) {
+	e = pa + strlen(pa) - 1;
+	if(e[0] == '/')
 		*e = '\0';
 
-                par = gstrdup(pa);
-                b = strrchr(par + strlen(base), '/');
-                if(b != nil) {
-			*b = '\0';
-                        tprintf(sock, "1..\t%s\t%s\t%s\r\n",
-                                par + strlen(base), ohost, port);
-                }
-		free(par);
-
-		ndir = scandir(pa, &dirent, 0, alphasort);
-		if(ndir < 0) {
-			perror("scandir");
-			free(pa);
-			return;
-		} else {
-			for(i = 0; i < ndir; i++) {
-				if(dirent[i]->d_name[0] == '.') {
-					free(dirent[i]);
-					continue;
-				}
-
-				type = gettype(dirent[i]->d_name);
-				file = smprintf("%s/%s", pa,
-						dirent[i]->d_name);
-				if(stat(file, &st) >= 0 && S_ISDIR(st.st_mode))
-					type = gettype("index.gph");
-				e = file + strlen(base);
-				tprintf(sock, "%c%s\t%s\t%s\t%s\r\n", *type->type,
-					dirent[i]->d_name, e, ohost, port);
-				free(file);
-				free(dirent[i]);
-			}
-			free(dirent);
-		}
-		tprintf(sock, ".\r\n");
+	par = gstrdup(pa);
+	b = strrchr(par + strlen(base), '/');
+	if(b != nil) {
+		*b = '\0';
+		tprintf(sock, "1..\t%s\t%s\t%s\r\n",
+			par + strlen(base), ohost, port);
 	}
+	free(par);
+
+	ndir = scandir(pa, &dirent, 0, alphasort);
+	if(ndir < 0) {
+		perror("scandir");
+		free(pa);
+		return;
+	} else {
+		for(i = 0; i < ndir; i++) {
+			if(dirent[i]->d_name[0] == '.') {
+				free(dirent[i]);
+				continue;
+			}
+
+			type = gettype(dirent[i]->d_name);
+			file = smprintf("%s/%s", pa,
+					dirent[i]->d_name);
+			if(stat(file, &st) >= 0 && S_ISDIR(st.st_mode))
+				type = gettype("index.gph");
+			e = file + strlen(base);
+			tprintf(sock, "%c%s\t%s\t%s\t%s\r\n", *type->type,
+				dirent[i]->d_name, e, ohost, port);
+			free(file);
+			free(dirent[i]);
+		}
+		free(dirent);
+	}
+	tprintf(sock, ".\r\n");
 
 	free(pa);
 }
