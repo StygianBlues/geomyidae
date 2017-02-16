@@ -35,6 +35,10 @@ filetype type[] = {
         {"htm", "0", handlebin},
         {"xhtml", "0", handlebin},
         {"css", "0", handlebin},
+        {"md", "0", handlebin},
+        {"c", "0", handlebin},
+        {"sh", "0", handlebin},
+        {"patch", "0", handlebin},
         {nil, nil, nil},
 };
 
