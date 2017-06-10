@@ -32,7 +32,9 @@ struct filetype {
 
 filetype *gettype(char *filename);
 void *gmallocz(int l, int d);
-char *gstrdup(char *str);
+void *xmalloc(size_t);
+void *xrealloc(void *, size_t);
+char *xstrdup(const char *str);
 Indexs *scanfile(char *fname);
 Elems *getadv(char *str);
 void printelem(int fd, Elems *el, char *addr, char *port);

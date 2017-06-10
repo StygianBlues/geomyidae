@@ -32,7 +32,7 @@ enum {
 	FILES	= 1,
 	DIRS	= 2,
 	HTTP	= 4,
-	ERRORS	= 8,
+	ERRORS	= 8
 };
 
 int glfd = -1;
@@ -381,7 +381,7 @@ main(int argc, char *argv[])
 			return 1;
 		}
 	} else {
-		ohost = gstrdup(ohost);
+		ohost = xstrdup(ohost);
 	}
 
 	if(group != nil) {

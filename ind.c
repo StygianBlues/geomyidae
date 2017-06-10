@@ -38,6 +38,43 @@ filetype type[] = {
         {nil, nil, nil},
 };
 
+void *
+xmalloc(size_t size)
+{
+	void *p;
+
+	if (!(p = malloc(size))) {
+		perror("malloc");
+		exit(1);
+	}
+
+	return p;
+}
+
+void *
+xrealloc(void *ptr, size_t size)
+{
+	if (!(ptr = realloc(ptr, size))) {
+		perror("realloc");
+		exit(1);
+	}
+
+	return ptr;
+}
+
+char *
+xstrdup(const char *str)
+{
+	char *ret;
+
+	if (!(ret = strdup(str))) {
+		perror("strdup");
+		exit(1);
+	}
+
+	return ret;
+}
+
 filetype *
 gettype(char *filename)
 {
@@ -61,30 +98,12 @@ gmallocz(int l, int d)
 {
 	char *ret;
 
-	ret = malloc(l);
-	if(ret == nil) {
-		perror("malloc");
-		exit(1);
-	}
+	ret = xmalloc(l);
 
 	if(d)
 		memset(ret, 0, l);
 
 	return (void *)ret;
-}
-
-char *
-gstrdup(char *str)
-{
-	char *ret;
-
-	ret = strdup(str);
-	if(ret == nil) {
-		perror("strdup");
-		exit(1);
-	}
-
-	return ret;
 }
 
 char *
@@ -95,9 +114,9 @@ readln(int fd)
 
 	len = 1;
 
-	ret = malloc(2);
+	ret = xmalloc(2);
 	while(read(fd, &ret[len - 1], 1) > 0 && ret[len - 1] != '\n')
-		ret = realloc(ret, ++len + 1);
+		ret = xrealloc(ret, ++len + 1);
 	if(ret[len - 1] != '\n') {
 		free(ret);
 		return nil;
@@ -148,7 +167,7 @@ addelem(Elems *e, char *s)
 	slen = strlen(s) + 1;
 
 	e->num++;
-	e->e = realloc(e->e, sizeof(char *) * e->num);
+	e->e = xrealloc(e->e, sizeof(char *) * e->num);
 	e->e[e->num - 1] = gmallocz(slen, 2);
 	strncpy(e->e[e->num - 1], s, slen - 1);
 
@@ -201,7 +220,7 @@ addindexs(Indexs *idx, Elems *el)
 {
 
 	idx->num++;
-	idx->n = realloc(idx->n, sizeof(Elems) * idx->num);
+	idx->n = xrealloc(idx->n, sizeof(Elems) * idx->num);
 	idx->n[idx->num - 1] = el;
 
 	return;
@@ -246,11 +265,11 @@ printelem(int fd, Elems *el, char *addr, char *port)
 
 	if(!strncmp(el->e[3], "server", 6)) {
 		free(el->e[3]);
-		el->e[3] = gstrdup(addr);
+		el->e[3] = xstrdup(addr);
 	}
 	if(!strncmp(el->e[4], "port", 4)) {
 		free(el->e[4]);
-		el->e[4] = gstrdup(port);
+		el->e[4] = xstrdup(port);
 	}
 	tprintf(fd, "%.1s%s\t%s\t%s\t%s\r\n", el->e[0], el->e[1], el->e[2],
 			el->e[3], el->e[4]);
@@ -332,11 +351,11 @@ reverselookup(char *host)
 		client = gethostbyaddr((const void *)&hoststr,
 				sizeof(hoststr), AF_INET);
 		if(client != NULL)
-			rethost = strdup(client->h_name);
+			rethost = xstrdup(client->h_name);
 	}
 
 	if(rethost == NULL)
-		rethost = gstrdup(host);
+		rethost = xstrdup(host);
 
 	return rethost;
 }

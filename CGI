@@ -51,7 +51,7 @@ is:
 	-> $host = server host
 	-> $port = server port
 
-If borth ways of input are combined, the variables are set as following:
+If both ways of input are combined, the variables are set as following:
 
 	C: /test.cgi?hello=world	searchterm	(Beware! A Tab!)
 	-> $search = »searchterm«

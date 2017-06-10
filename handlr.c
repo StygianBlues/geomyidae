@@ -32,12 +32,12 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 	USED(args);
 	USED(sear);
 
-	pa = gstrdup(path);
+	pa = xstrdup(path);
 	e = pa + strlen(pa) - 1;
 	if(e[0] == '/')
 		*e = '\0';
 
-	par = gstrdup(pa);
+	par = xstrdup(pa);
 	b = strrchr(par + strlen(base), '/');
 	if(b != nil) {
 		*b = '\0';
@@ -107,7 +107,6 @@ handlebin(int sock, char *file, char *port, char *base, char *args,
 	char sendb[1024];
 	int len, fd, sent;
 
-	len = -1;
 	USED(port);
 	USED(base);
 	USED(args);
@@ -137,7 +136,7 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 	USED(base);
 	USED(port);
 
-	path = gstrdup(file);
+	path = xstrdup(file);
 	p = strrchr(path, '/');
 	if (p != nil)
 		p[1] = '\0';
@@ -165,7 +164,10 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 				break;
 		}
 
-		execl(file, p, sear, args, ohost, port, (char *)nil);
+		if (execl(file, p, sear, args, ohost, port, (char *)nil) == -1) {
+			perror(NULL);
+			_exit(1);
+		}
 	case -1:
 		break;
 	default:
@@ -189,7 +191,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 	if(pipe(outpipe) < 0)
 		return;
 
-	path = gstrdup(file);
+	path = xstrdup(file);
 	p = strrchr(path, '/');
 	if (p != nil)
 		p[1] = '\0';
