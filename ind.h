@@ -43,7 +43,6 @@ void addelem(Elems *e, char *s);
 void freeindex(Indexs *i);
 void freeelem(Elems *e);
 char *readln(int fd);
-void tprintf(int fd, char *fmt, ...);
 int initlogging(char *logf);
 void stoplogging(int fd);
 char *smprintf(char *fmt, ...);

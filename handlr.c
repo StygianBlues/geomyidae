@@ -41,7 +41,7 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 	b = strrchr(par + strlen(base), '/');
 	if(b != nil) {
 		*b = '\0';
-		tprintf(sock, "1..\t%s\t%s\t%s\r\n",
+		dprintf(sock, "1..\t%s\t%s\t%s\r\n",
 			par + strlen(base), ohost, port);
 	}
 	free(par);
@@ -64,14 +64,14 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 			if(stat(file, &st) >= 0 && S_ISDIR(st.st_mode))
 				type = gettype("index.gph");
 			e = file + strlen(base);
-			tprintf(sock, "%c%s\t%s\t%s\t%s\r\n", *type->type,
+			dprintf(sock, "%c%s\t%s\t%s\t%s\r\n", *type->type,
 				dirent[i]->d_name, e, ohost, port);
 			free(file);
 			free(dirent[i]);
 		}
 		free(dirent);
 	}
-	tprintf(sock, ".\r\n");
+	dprintf(sock, ".\r\n");
 
 	free(pa);
 }
@@ -94,7 +94,7 @@ handlegph(int sock, char *file, char *port, char *base, char *args,
 			freeelem(act->n[i]);
 			act->n[i] = nil;
 		}
-		tprintf(sock, ".\r\n");
+		dprintf(sock, ".\r\n");
 
 		freeindex(act);
 	}
@@ -235,7 +235,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 			printelem(sock, el, ohost, port);
 			freeelem(el);
 		}
-		tprintf(sock, ".\r\n");
+		dprintf(sock, ".\r\n");
 
 		wait(NULL);
 		if (path != nil)

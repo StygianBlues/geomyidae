@@ -117,7 +117,7 @@ logentry(char *host, char *port, char *qry, char *status)
 		strftime(timstr, sizeof(timstr), "%a %b %d %H:%M:%S %Z %Y",
 					ptr);
 
-		tprintf(glfd, "[%s|%s:%s] %s (%s)\n",
+		dprintf(glfd, "[%s|%s:%s] %s (%s)\n",
 			timstr, ahost, port, qry, status);
 		free(ahost);
         }
@@ -214,7 +214,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 			return;
 		}
 
-		tprintf(sock, err, recvc);
+		dprintf(sock, err, recvc);
 		if(loglvl & ERRORS)
 			logentry(clienth, clientp, recvc, "not found");
 	}
@@ -299,7 +299,7 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 void
 usage(void)
 {
-	tprintf(2, "usage: %s [-d] [-l logfile] [-v loglvl] [-b base]"
+	dprintf(2, "usage: %s [-d] [-l logfile] [-v loglvl] [-b base]"
 		   " [-p port] [-o sport] [-u user] [-g group] [-h host]"
 		   " [-i IP]\n",
 		   argv0);
