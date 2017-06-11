@@ -229,27 +229,31 @@ addindexs(Indexs *idx, Elems *el)
 Indexs *
 scanfile(char *fname)
 {
-	char *ln;
-	int fd;
+	char *ln = NULL;
+	size_t linesiz = 0;
+	ssize_t n;
+	FILE *fp;
 	Indexs *ret;
 	Elems *el;
 
-	fd = open(fname, O_RDONLY);
-	if(fd < 0)
+	if (!(fp = fopen(fname, "r")))
 		return nil;
 
 	ret = xcalloc(1, sizeof(Indexs));
 
-	while((ln = readln(fd)) != nil) {
+	while ((n = getline(&ln, &linesiz, fp)) > 0) {
+		if (ln[n - 1] == '\n')
+			ln[--n] = '\0';
 		el = getadv(ln);
-		free(ln);
 		if(el == nil)
 			continue;
 
 		addindexs(ret, el);
-		el = nil;
 	}
-	close(fd);
+	if (ferror(fp))
+		perror("getline");
+	free(ln);
+	fclose(fp);
 
 	if(ret->n == nil) {
 		free(ret);
