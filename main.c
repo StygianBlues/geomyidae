@@ -374,7 +374,7 @@ main(int argc, char *argv[])
 	} ARGEND;
 
 	if(ohost == nil) {
-		ohost = gmallocz(513, 2);
+		ohost = xcalloc(1, 513);
 		if(gethostname(ohost, 512) < 0) {
 			perror("gethostname");
 			free(ohost);

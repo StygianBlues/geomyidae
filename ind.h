@@ -31,7 +31,7 @@ struct filetype {
 };
 
 filetype *gettype(char *filename);
-void *gmallocz(int l, int d);
+void *xcalloc(size_t, size_t);
 void *xmalloc(size_t);
 void *xrealloc(void *, size_t);
 char *xstrdup(const char *str);

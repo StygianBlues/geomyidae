@@ -39,6 +39,19 @@ filetype type[] = {
 };
 
 void *
+xcalloc(size_t nmemb, size_t size)
+{
+	void *p;
+
+	if (!(p = calloc(nmemb, size))) {
+		perror("calloc");
+		exit(1);
+	}
+
+	return p;
+}
+
+void *
 xmalloc(size_t size)
 {
 	void *p;
@@ -91,19 +104,6 @@ gettype(char *filename)
 			return &type[i];
 
 	return &type[0];
-}
-
-void *
-gmallocz(int l, int d)
-{
-	char *ret;
-
-	ret = xmalloc(l);
-
-	if(d)
-		memset(ret, 0, l);
-
-	return (void *)ret;
 }
 
 char *
@@ -168,7 +168,7 @@ addelem(Elems *e, char *s)
 
 	e->num++;
 	e->e = xrealloc(e->e, sizeof(char *) * e->num);
-	e->e[e->num - 1] = gmallocz(slen, 2);
+	e->e[e->num - 1] = xcalloc(1, slen);
 	strncpy(e->e[e->num - 1], s, slen - 1);
 
 	return;
@@ -180,7 +180,7 @@ getadv(char *str)
 	char *b, *e;
 	Elems *ret;
 
-	ret = gmallocz(sizeof(Elems), 2);
+	ret = xcalloc(1, sizeof(Elems));
 	if(*str != '[') {
 		b = str;
 		if(*str == 't')
@@ -238,7 +238,7 @@ scanfile(char *fname)
 	if(fd < 0)
 		return nil;
 
-	ret = gmallocz(sizeof(Indexs), 2);
+	ret = xcalloc(1, sizeof(Indexs));
 
 	while((ln = readln(fd)) != nil) {
 		el = getadv(ln);
@@ -307,7 +307,7 @@ smprintf(char *fmt, ...)
         size = vsnprintf(NULL, 0, fmt, fmtargs);
         va_end(fmtargs);
 
-        ret = gmallocz(++size, 2);
+        ret = xcalloc(1, ++size);
         va_start(fmtargs, fmt);
         vsnprintf(ret, size, fmt, fmtargs);
         va_end(fmtargs);
