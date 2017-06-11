@@ -281,21 +281,10 @@ void
 tprintf(int fd, char *fmt, ...)
 {
 	va_list fmtargs;
-	int fd2;
-	FILE *fp;
-
-	fd2 = dup(fd);
-	fp = fdopen(fd2, "w");
-	if(fp == nil) {
-		perror("fdopen");
-		return;
-	}
 
 	va_start(fmtargs, fmt);
-	vfprintf(fp, fmt, fmtargs);
+	vdprintf(fd, fmt, fmtargs);
 	va_end(fmtargs);
-
-	fclose(fp);
 
 	return;
 }
