@@ -177,40 +177,42 @@ addelem(Elems *e, char *s)
 Elems *
 getadv(char *str)
 {
-	char *b, *e;
+	char *b, *e, *o;
 	Elems *ret;
 
 	ret = xcalloc(1, sizeof(Elems));
-	if(*str != '[') {
-		b = str;
-		if(*str == 't')
-			b++;
-		addelem(ret, "i");
-		addelem(ret, b);
-		addelem(ret, "Err");
-		addelem(ret, "server");
-		addelem(ret, "port");
+	if (str[0] == '[') {
+		o = xstrdup(str);
+		b = o + 1;
+		while ((e = strchr(b, '|')) != nil) {
+			*e = '\0';
+			e++;
+			addelem(ret, b);
+			b = e;
+		}
 
-		return ret;
+		e = strchr(b, ']');
+		if (e != nil) {
+			*e = '\0';
+			addelem(ret, b);
+		}
+		free(o);
+		if (ret->e != nil && ret->num == 5)
+			return ret;
+
+		/* Invalid entry: Give back the whole line. */
+		freeelem(ret);
+		ret = xcalloc(1, sizeof(Elems));
 	}
 
-	b = str + 1;
-	while((e = strchr(b, '|')) != nil) {
-		*e = '\0';
-		e++;
-		addelem(ret, b);
-		b = e;
-	}
-
-	e = strchr(b, ']');
-	if(e != nil) {
-		*e = '\0';
-		addelem(ret, b);
-	}
-	if(ret->e == nil) {
-		free(ret);
-		return nil;
-	}
+	b = str;
+	if(*str == 't')
+		b++;
+	addelem(ret, "i");
+	addelem(ret, b);
+	addelem(ret, "Err");
+	addelem(ret, "server");
+	addelem(ret, "port");
 
 	return ret;
 }
