@@ -299,11 +299,10 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 void
 usage(void)
 {
-	dprintf(2, "usage: %s [-d] [-l logfile] [-v loglvl] [-b base]"
-		   " [-p port] [-o sport] [-u user] [-g group] [-h host]"
-		   " [-i IP]\n",
+	dprintf(2, "usage: %s [-4] [-6] [-d] [-l logfile] [-v loglvl] "
+		   "[-b base] [-p port] [-o sport] [-u user] [-g group] "
+		   "[-h host] [-i IP]\n",
 		   argv0);
-
 	exit(1);
 }
 
