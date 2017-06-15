@@ -32,7 +32,8 @@ enum {
 	FILES	= 1,
 	DIRS	= 2,
 	HTTP	= 4,
-	ERRORS	= 8
+	ERRORS	= 8,
+	CONN	= 16
 };
 
 int glfd = -1;
@@ -475,6 +476,9 @@ main(int argc, char *argv[])
 		getnameinfo((struct sockaddr *)&clt, cltlen, clienth,
 				sizeof(clienth), clientp, sizeof(clientp),
 				NI_NUMERICHOST|NI_NUMERICSERV);
+
+		if (loglvl & CONN)
+			logentry(clienth, clientp, "-", "connected");
 
 		switch(fork()) {
 		case -1:

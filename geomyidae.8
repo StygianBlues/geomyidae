@@ -97,11 +97,12 @@ Set the logging level (default: 7)
 .
 .Bd -literal
 Loglevels:
-        0 - no logging
-        1 - served plain files
-        2 - directory listings
-        4 - HTTP redirects
-        8 - errors (e.g., not found)
+        0  - no logging
+        1  - served plain files
+        2  - directory listings
+        4  - HTTP redirects
+        8  - errors (e.g., not found)
+        16 - client connections
   e.g.:
         1 + 2 + 4 + 8 = 15
         (files + directories + HTTP + errors)
