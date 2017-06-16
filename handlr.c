@@ -172,8 +172,7 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 		break;
 	default:
 		wait(NULL);
-		if (path != nil)
-			free(path);
+		free(path);
 		break;
 	}
 }
@@ -238,8 +237,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 		dprintf(sock, ".\r\n");
 
 		wait(NULL);
-		if (path != nil)
-			free(path);
+		free(path);
 		break;
 	}
 }

@@ -149,8 +149,7 @@ freeindex(Indexs *i)
 	if(i != nil) {
 		if(i->n != nil) {
 			for(;i->num > 0; i->num--)
-				if(i->n[i->num - 1] != nil)
-					freeelem(i->n[i->num - 1]);
+				freeelem(i->n[i->num - 1]);
 			free(i->n);
 		}
 		free(i);
