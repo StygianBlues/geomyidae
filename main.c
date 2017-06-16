@@ -22,6 +22,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <errno.h>
+#include <arpa/inet.h>
 
 #include "ind.h"
 #include "handlr.h"
@@ -266,7 +267,9 @@ initsignals(void)
 int
 getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 {
+	char addstr[INET6_ADDRSTRLEN];
 	struct addrinfo *ai, *rp;
+	void *sinaddr;
 	int on, listfd;
 
 	listfd = -1;
@@ -286,9 +289,21 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 					sizeof(on)) < 0) {
 			break;
 		}
-		if(bind(listfd, rp->ai_addr, rp->ai_addrlen) == 0)
+
+		sinaddr = (rp->ai_family == AF_INET) ?
+		          (void *)&((struct sockaddr_in *)rp->ai_addr)->sin_addr :
+		          (void *)&((struct sockaddr_in6 *)rp->ai_addr)->sin6_addr;
+
+		if(bind(listfd, rp->ai_addr, rp->ai_addrlen) == 0) {
+			if(loglvl & CONN && inet_ntop(rp->ai_family, sinaddr,
+			   addstr, sizeof(addstr)))
+				logentry(addstr, port, "-", "listening");
 			break;
+		}
 		close(listfd);
+		if(loglvl & CONN && inet_ntop(rp->ai_family, sinaddr,
+		   addstr, sizeof(addstr)))
+			logentry(addstr, port, "-", "could not bind");
 	}
 	if(rp == nil)
 		return -1;
@@ -477,7 +492,7 @@ main(int argc, char *argv[])
 				sizeof(clienth), clientp, sizeof(clientp),
 				NI_NUMERICHOST|NI_NUMERICSERV);
 
-		if (loglvl & CONN)
+		if(loglvl & CONN)
 			logentry(clienth, clientp, "-", "connected");
 
 		switch(fork()) {
@@ -501,6 +516,8 @@ main(int argc, char *argv[])
 			break;
 		}
 		close(sock);
+		if(loglvl & CONN)
+			logentry(clienth, clientp, "-", "disconnected");
 	}
 
 	shutdown(listfd, SHUT_RDWR);
