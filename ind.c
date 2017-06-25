@@ -106,26 +106,6 @@ gettype(char *filename)
 	return &type[0];
 }
 
-char *
-readln(int fd)
-{
-	char *ret;
-	int len;
-
-	len = 1;
-
-	ret = xmalloc(2);
-	while(read(fd, &ret[len - 1], 1) > 0 && ret[len - 1] != '\n')
-		ret = xrealloc(ret, ++len + 1);
-	if(ret[len - 1] != '\n') {
-		free(ret);
-		return nil;
-	}
-	ret[len - 1] = '\0';
-
-	return ret;
-}
-
 void
 freeelem(Elems *e)
 {

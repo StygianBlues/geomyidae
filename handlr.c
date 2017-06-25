@@ -181,7 +181,10 @@ void
 handledcgi(int sock, char *file, char *port, char *base, char *args,
 		char *sear, char *ohost)
 {
-	char *p, *path, *ln;
+	FILE *fp;
+	char *p, *path, *ln = nil;
+	size_t linesiz = 0;
+	ssize_t n;
 	int outpipe[2];
 	Elems *el;
 
@@ -226,7 +229,15 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 		dup2(sock, 1);
 		close(outpipe[1]);
 
-		while((ln = readln(outpipe[0])) != nil) {
+		if (!(fp = fdopen(outpipe[0], "r"))) {
+			perror("fdopen");
+			break;
+		}
+
+		while ((n = getline(&ln, &linesiz, fp)) > 0) {
+			if (ln[n - 1] == '\n')
+				ln[--n] = '\0';
+
 			el = getadv(ln);
 			if (el == nil)
 				continue;
@@ -234,10 +245,13 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 			printelem(sock, el, ohost, port);
 			freeelem(el);
 		}
+		if (ferror(fp))
+			perror("getline");
 		dprintf(sock, ".\r\n");
 
-		wait(NULL);
+		free(ln);
 		free(path);
+		wait(NULL);
 		break;
 	}
 }
