@@ -165,7 +165,7 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 		}
 
 		if (execl(file, p, sear, args, ohost, port, (char *)nil) == -1) {
-			perror(NULL);
+			perror("execl");
 			_exit(1);
 		}
 	case -1:
