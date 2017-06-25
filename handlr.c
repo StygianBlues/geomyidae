@@ -255,6 +255,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 		free(ln);
 		free(path);
 		wait(NULL);
+		fclose(fp);
 		break;
 	}
 }
