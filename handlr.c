@@ -222,7 +222,10 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 				break;
 		}
 
-		execl(file, p, sear, args, ohost, port, (char *)nil);
+		if (execl(file, p, sear, args, ohost, port, (char *)nil) == -1) {
+			perror("execl");
+			_exit(1);
+		}
 	case -1:
 		break;
 	default:
