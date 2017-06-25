@@ -450,7 +450,7 @@ main(int argc, char *argv[])
 		}
 	}
 	if(listfd < 0) {
-		perror("You did not specify and TCP protocol.");
+		perror("You did not specify a TCP port.");
 		return 1;
 	}
 
