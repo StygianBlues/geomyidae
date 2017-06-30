@@ -1,11 +1,13 @@
 #!/bin/sh
 #
-# $OpenBSD: rc.template,v 1.6 2014/08/14 19:54:10 ajacoutot Exp $
+# $OpenBSD: geomyidae,v 1.7 2017/06/30 22:06:09 anonymous Exp $
 
-daemon="${TRUEPREFIX}/bin/geomyidae"
+daemon="/usr/local/sbin/geomyidae"
 daemon_flags="-l /var/log/geomyidae.log -u _geomyidae -g _geomyidae"
 
 . /etc/rc.d/rc.subr
+
+pexp="${daemon} .*"
 
 rc_reload=NO
 
