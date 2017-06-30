@@ -328,7 +328,7 @@ main(int argc, char *argv[])
 	struct addrinfo hints;
 	struct sockaddr_storage clt;
 	socklen_t cltlen;
-	int sock, dofork, v4, v6;
+	int sock, dofork, v4, v6, usechroot = 0;
 	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV];
 	char *user, *group, *bindip, *ohost, *sport;
 	struct passwd *us;
@@ -356,6 +356,9 @@ main(int argc, char *argv[])
 		break;
 	case 'b':
 		base = EARGF(usage());
+		break;
+	case 'c':
+		usechroot = 1;
 		break;
 	case 'p':
 		port = EARGF(usage());
@@ -458,6 +461,18 @@ main(int argc, char *argv[])
 		perror("listen");
 		close(listfd);
 		return 1;
+	}
+
+	if(usechroot) {
+		if(chdir(base) < 0) {
+			perror("chdir");
+			return 1;
+		}
+		base = "";
+		if(chroot(".") < 0) {
+			perror("chroot");
+			return 1;
+		}
 	}
 
 	if(dropprivileges(gr, us) < 0) {

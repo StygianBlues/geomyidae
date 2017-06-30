@@ -13,6 +13,7 @@
 .Bk -words
 .Op Fl 4
 .Op Fl 6
+.Op Fl c
 .Op Fl d
 .Op Fl l Ar logfile
 .Op Fl v Ar loglevel
@@ -84,6 +85,13 @@ Only use IPv4.
 .
 .It Fl 6
 Only use IPv6.
+.
+.It Fl c
+Use
+.Xr chroot 2
+for the
+.Ar base
+directory (by default off).
 .
 .It Fl d
 Don't fork into background. If no log file is given, this implies logging to
