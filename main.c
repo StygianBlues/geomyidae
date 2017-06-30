@@ -82,28 +82,6 @@ dropprivileges(struct group *gr, struct passwd *pw)
 	return 0;
 }
 
-char *
-securepath(char *p, int len)
-{
-	int i;
-
-	if(len < 2)
-		return p;
-
-	for(i = 1; i < strlen(p); i++) {
-		if(p[i - 1] == '.' && p[i] == '.') {
-			if(p[i - 2] == '/')
-				p[i] = '/';
-			if(p[i + 1] == '/')
-				p[i] = '/';
-			if(len == 2)
-				p[i] = '/';
-		}
-	}
-
-	return p;
-}
-
 void
 logentry(char *host, char *port, char *qry, char *status)
 {
@@ -171,11 +149,12 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	if(args != nil)
 		*args++ = '\0';
 
-	securepath(recvb, len - 2);
-	if(strlen(recvb) == 0) {
+	if(recvb[0] == '\0') {
 		recvb[0] = '/';
 		recvb[1] = '\0';
 	}
+	if(recvb[0] != '/' || strstr(recvb, ".."))
+		return;
 
 	snprintf(path, sizeof(path), "%s%s", base, recvb);
 
