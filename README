@@ -32,6 +32,7 @@ Loglevels:
 	2 - dir listings
 	4 - HTTP redirects
 	8 - not found queries
+	16 - client connections
 
 	1 + 2 + 4 = 7 (files + dir listings + HTTP)
 
