@@ -458,6 +458,9 @@ main(int argc, char *argv[])
 			perror("chroot");
 			return 1;
 		}
+	} else if(*base != '/' && !(base = realpath(base, NULL))) {
+		perror("realpath");
+		return 1;
 	}
 
 	if(dropprivileges(gr, us) < 0) {
