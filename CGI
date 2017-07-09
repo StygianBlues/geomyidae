@@ -9,8 +9,8 @@ There are two modes: standard cgi and dynamic cgi.
 
 PERMISSIONS
 
-The scripts are run using the permissions of geomyidae. It is adivsed to use
-the -g and -u option of gemoyidae.
+The scripts are run using the permissions of geomyidae. It is advised to use
+the -g and -u options of geomyidae.
 
 
 BEFOREHAND
@@ -36,7 +36,7 @@ When it is a plain request, the arguments will have these values:
 If the request is for a type 7 search element, then the entered string by
 the user will be seen as following:
 
-	C: /test.cgi	searchterm		(There is a Tab inbetween)
+	C: /test.cgi	searchterm		(There is a TAB in-between)
 	-> $search = »searchterm«
 	-> $arguments = ""
 	-> $host = server host
