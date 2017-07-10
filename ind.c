@@ -104,7 +104,7 @@ gettype(char *filename)
 	end++;
 
 	for(i = 0; type[i].end != nil; i++)
-		if(!strncasecmp(end, type[i].end, strlen(type[i].end)))
+		if(!strcasecmp(end, type[i].end))
 			return &type[i];
 
 	return &type[0];
@@ -249,11 +249,11 @@ void
 printelem(int fd, Elems *el, char *addr, char *port)
 {
 
-	if(!strncmp(el->e[3], "server", 6)) {
+	if(!strcmp(el->e[3], "server")) {
 		free(el->e[3]);
 		el->e[3] = xstrdup(addr);
 	}
-	if(!strncmp(el->e[4], "port", 4)) {
+	if(!strcmp(el->e[4], "port")) {
 		free(el->e[4]);
 		el->e[4] = xstrdup(port);
 	}
