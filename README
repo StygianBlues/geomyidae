@@ -13,7 +13,7 @@ Usage:
 		  [-u user] [-g group] [-h host] [-i IP]
 		-d		don't fork into background
 		-l logfile	setting this will turn on logging into logfile
-		-v loglevel	see below (default 7) 
+		-v loglevel	see below (default 7)
 		-b htdocs	the htdocs root for serving files (default
 				/var/gopher)
 		-p port		set the port where geomyidae should listen on

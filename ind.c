@@ -113,7 +113,6 @@ gettype(char *filename)
 void
 freeelem(Elems *e)
 {
-
 	if(e != nil) {
 		if(e->e != nil) {
 			for(;e->num > 0; e->num--)
@@ -129,7 +128,6 @@ freeelem(Elems *e)
 void
 freeindex(Indexs *i)
 {
-
 	if(i != nil) {
 		if(i->n != nil) {
 			for(;i->num > 0; i->num--)
@@ -203,7 +201,6 @@ getadv(char *str)
 void
 addindexs(Indexs *idx, Elems *el)
 {
-
 	idx->num++;
 	idx->n = xrealloc(idx->n, sizeof(Elems) * idx->num);
 	idx->n[idx->num - 1] = el;
@@ -269,17 +266,12 @@ printelem(int fd, Elems *el, char *addr, char *port)
 int
 initlogging(char *logf)
 {
-	int fd;
-
-	fd = open(logf, O_APPEND | O_WRONLY | O_CREAT, 0644);
-
-	return fd;
+	return open(logf, O_APPEND | O_WRONLY | O_CREAT, 0644);
 }
 
 void
 stoplogging(int fd)
 {
-
 	close(fd);
 
 	return;

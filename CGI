@@ -28,8 +28,8 @@ Geomyidae will call the script like this:
 When it is a plain request, the arguments will have these values:
 
 	C: /test.cgi
-	-> $search = "" 
-	-> $arguments = "" 
+	-> $search = ""
+	-> $arguments = ""
 	-> $host = server host
 	-> $port = server port
 
@@ -40,7 +40,7 @@ the user will be seen as following:
 	-> $search = »searchterm«
 	-> $arguments = ""
 	-> $host = server host
-	-> $port = server port 
+	-> $port = server port
 
 When you are trying to give your script some calling arguments, the syntax
 is:
