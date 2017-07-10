@@ -7,11 +7,11 @@ PREFIX ?= /usr
 BINDIR ?= $(PREFIX)/bin
 MANDIR ?= $(PREFIX)/share/man/man8
 
-CFLAGS += -O2 -Wall -I. -I/usr/include 
+CFLAGS += -O2 -Wall -I. -I/usr/include
 LDFLAGS += -L/usr/lib -L. -lc
 CC = cc
 
-SRC = main.c ind.c handlr.c 
+SRC = main.c ind.c handlr.c
 OBJ = ${SRC:.c=.o}
 
 all: options $(NAME)
@@ -34,7 +34,7 @@ ${NAME}: ${OBJ}
 
 clean:
 	@echo cleaning
-	@rm -f ${NAME} ${OBJ} ${NAME}-${VERSIOn}.tar.gz 
+	@rm -f ${NAME} ${OBJ} ${NAME}-${VERSION}.tar.gz
 
 install: all
 	@echo installing executable to ${DESTDIR}${PREFIX}/bin
