@@ -16,11 +16,12 @@ extern char *argv0;
 					argc--;\
 					break;\
 				}\
-				for(argv[0]++, _argv = argv; argv[0][0];\
-						argv[0]++) {\
+				int i_;\
+				for(i_ = 1, _argv = argv; argv[0][i_];\
+						i_++) {\
 					if(_argv != argv)\
 						break;\
-					_argc = argv[0][0];\
+					_argc = argv[0][i_];\
 					switch(_argc)
 
 #define ARGEND			}\
