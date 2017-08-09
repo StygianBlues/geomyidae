@@ -7,8 +7,6 @@ daemon_flags="-l /var/log/geomyidae.log -u _geomyidae -g _geomyidae"
 
 . /etc/rc.d/rc.subr
 
-pexp="${daemon} .*"
-
 rc_reload=NO
 
 rc_cmd $1
