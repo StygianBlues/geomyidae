@@ -46,7 +46,7 @@ char *logfile = nil;
 char *argv0;
 char *stdbase = "/var/gopher";
 char *stdport = "70";
-char *indexf[] = {"/index.gph", "/index.cgi", "/index.dcgi"};
+char *indexf[] = {"/index.gph", "/index.cgi", "/index.dcgi", "index.bin"};
 char *err = "3Sorry, but the requested token '%s' could not be found.\tErr"
 	    "\tlocalhost\t70\r\n.\r\n\r\n";
 char *htredir = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
