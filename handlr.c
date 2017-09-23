@@ -169,6 +169,7 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 			_exit(1);
 		}
 	case -1:
+		perror("fork");
 		break;
 	default:
 		wait(NULL);
@@ -227,6 +228,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 			_exit(1);
 		}
 	case -1:
+		perror("fork");
 		break;
 	default:
 		dup2(sock, 1);

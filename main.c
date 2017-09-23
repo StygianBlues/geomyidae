@@ -401,8 +401,15 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if(dofork && fork() != 0)
-		return 0;
+	if(dofork) {
+		switch(fork()) {
+		case -1:
+			perror("fork");
+			return 1;
+		default:
+			return 0;
+		}
+	}
 
 	if(logfile != nil) {
 		glfd = initlogging(logfile);
