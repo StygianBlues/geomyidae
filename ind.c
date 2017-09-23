@@ -12,8 +12,18 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
+
+/* for sendfile(2) */
+#ifdef __linux__
+#include <sys/sendfile.h>
+#elif defined(__FreeBSD__) || defined(__DragonFly__)
+#include <sys/types.h>
+#include <sys/uio.h>
+#endif
 
 #include "ind.h"
 #include "handlr.h"
@@ -41,6 +51,64 @@ filetype type[] = {
         {"patch", "0", handlebin},
         {nil, nil, nil},
 };
+
+int
+xsendfile(int fd, int sock)
+{
+	struct stat st;
+	char *sendb;
+	size_t bufsiz = BUFSIZ, count = 0;
+	int len, sent, optval;
+
+#ifdef TCP_CORK
+	optval = 1;
+	setsockopt(sock, IPPROTO_TCP, TCP_CORK, &optval, sizeof(int));
+#endif
+
+#ifdef TCP_NOPUSH
+	optval = 1;
+	setsockopt(sock, IPPROTO_TCP, TCP_NOPUSH, &optval, sizeof(int));
+#endif
+
+#ifdef TCP_NODELAY
+	optval = 0;
+	setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(int));
+#endif
+
+	if(fstat(fd, &st) >= 0) {
+		if((bufsiz = st.st_blksize) < BUFSIZ)
+			bufsiz = BUFSIZ;
+		count = st.st_size;
+	}
+
+#if !defined(__linux__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
+	count = 0;
+#endif
+
+	if (count == 0) {
+		sendb = xmalloc(bufsiz);
+		while((len = read(fd, sendb, bufsiz)) > 0) {
+			while(len > 0) {
+				if ((sent = send(sock, sendb, len, 0)) < 0) {
+					close(fd);
+					free(sendb);
+					return -1;
+				}
+				len -= sent;
+			}
+		}
+		free(sendb);
+		return 0;
+	}
+
+#ifdef __linux__
+	return sendfile(sock, fd, NULL, count);
+#endif
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+	return sendfile(fd, sock, 0, count, NULL, NULL, 0);
+#endif
+	return -1;
+}
 
 void *
 xcalloc(size_t nmemb, size_t size)

@@ -35,6 +35,7 @@ void *xcalloc(size_t, size_t);
 void *xmalloc(size_t);
 void *xrealloc(void *, size_t);
 char *xstrdup(const char *str);
+int xsendfile(int, int);
 Indexs *scanfile(char *fname);
 Elems *getadv(char *str);
 int printelem(int fd, Elems *el, char *addr, char *port);
