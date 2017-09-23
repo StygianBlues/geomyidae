@@ -37,7 +37,7 @@ void *xrealloc(void *, size_t);
 char *xstrdup(const char *str);
 Indexs *scanfile(char *fname);
 Elems *getadv(char *str);
-void printelem(int fd, Elems *el, char *addr, char *port);
+int printelem(int fd, Elems *el, char *addr, char *port);
 void addindexs(Indexs *idx, Elems *el);
 void addelem(Elems *e, char *s);
 void freeindex(Indexs *i);

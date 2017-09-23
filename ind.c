@@ -245,10 +245,9 @@ scanfile(char *fname)
 	return ret;
 }
 
-void
+int
 printelem(int fd, Elems *el, char *addr, char *port)
 {
-
 	if(!strcmp(el->e[3], "server")) {
 		free(el->e[3]);
 		el->e[3] = xstrdup(addr);
@@ -257,10 +256,12 @@ printelem(int fd, Elems *el, char *addr, char *port)
 		free(el->e[4]);
 		el->e[4] = xstrdup(port);
 	}
-	dprintf(fd, "%.1s%s\t%s\t%s\t%s\r\n", el->e[0], el->e[1], el->e[2],
-			el->e[3], el->e[4]);
-
-	return;
+	if (dprintf(fd, "%.1s%s\t%s\t%s\t%s\r\n", el->e[0], el->e[1], el->e[2],
+			el->e[3], el->e[4]) < 0) {
+		perror("printelem: dprintf");
+		return -1;
+	}
+	return 0;
 }
 
 int

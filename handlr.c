@@ -25,7 +25,7 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 {
 	char *pa, *file, *e, *par, *b;
 	struct dirent **dirent;
-	int ndir, i;
+	int ndir, i, ret = 0;
 	struct stat st;
 	filetype *type;
 
@@ -52,7 +52,7 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 		free(pa);
 		return;
 	} else {
-		for(i = 0; i < ndir; i++) {
+		for(i = 0; i < ndir && ret >= 0; i++) {
 			if(dirent[i]->d_name[0] == '.') {
 				free(dirent[i]);
 				continue;
@@ -64,7 +64,7 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 			if(stat(file, &st) >= 0 && S_ISDIR(st.st_mode))
 				type = gettype("index.gph");
 			e = file + strlen(base);
-			dprintf(sock, "%c%s\t%s\t%s\t%s\r\n", *type->type,
+			ret = dprintf(sock, "%c%s\t%s\t%s\t%s\r\n", *type->type,
 				dirent[i]->d_name, e, ohost, port);
 			free(file);
 			free(dirent[i]);
@@ -81,7 +81,7 @@ handlegph(int sock, char *file, char *port, char *base, char *args,
 		char *sear, char *ohost)
 {
 	Indexs *act;
-	int i;
+	int i, ret = 0;
 
 	USED(base);
 	USED(args);
@@ -89,8 +89,8 @@ handlegph(int sock, char *file, char *port, char *base, char *args,
 
 	act = scanfile(file);
 	if(act != nil) {
-		for(i = 0; i < act->num; i++) {
-			printelem(sock, act->n[i], ohost, port);
+		for(i = 0; i < act->num && ret >= 0; i++) {
+			ret = printelem(sock, act->n[i], ohost, port);
 			freeelem(act->n[i]);
 			act->n[i] = nil;
 		}
@@ -117,9 +117,10 @@ handlebin(int sock, char *file, char *port, char *base, char *args,
 	if(fd >= 0) {
 		while((len = read(fd, sendb, sizeof(sendb))) > 0) {
 			while(len > 0) {
-				sent = send(sock, sendb, len, 0);
-				if(sent < 0)
-					break;
+				if ((sent = send(sock, sendb, len, 0)) < 0) {
+					close(fd);
+					return;
+				}
 				len -= sent;
 			}
 		}
@@ -186,7 +187,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 	char *p, *path, *ln = nil;
 	size_t linesiz = 0;
 	ssize_t n;
-	int outpipe[2];
+	int outpipe[2], ret = 0;
 	Elems *el;
 
 	USED(base);
@@ -239,7 +240,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 			break;
 		}
 
-		while ((n = getline(&ln, &linesiz, fp)) > 0) {
+		while ((n = getline(&ln, &linesiz, fp)) > 0 && ret >= 0) {
 			if (ln[n - 1] == '\n')
 				ln[--n] = '\0';
 
@@ -247,7 +248,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 			if (el == nil)
 				continue;
 
-			printelem(sock, el, ohost, port);
+			ret = printelem(sock, el, ohost, port);
 			freeelem(el);
 		}
 		if (ferror(fp))
@@ -256,9 +257,8 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 
 		free(ln);
 		free(path);
-		wait(NULL);
 		fclose(fp);
+		wait(NULL);
 		break;
 	}
 }
-
