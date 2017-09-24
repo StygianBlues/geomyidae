@@ -73,7 +73,7 @@ xsendfile(int fd, int sock)
 #endif
 
 /*
- * Disable Nagle algorithm, which means to sent segments as soon as possible.
+ * Enforce Nagle algorithm so big packets are sent out, if possible.
  */
 #ifdef TCP_NODELAY
 	optval = 0;
