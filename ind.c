@@ -60,16 +60,21 @@ xsendfile(int fd, int sock)
 	size_t bufsiz = BUFSIZ, count = 0;
 	int len, sent, optval;
 
+/* Tell the kernel to not send small packets on every write. */
 #ifdef TCP_CORK
 	optval = 1;
 	setsockopt(sock, IPPROTO_TCP, TCP_CORK, &optval, sizeof(int));
 #endif
 
+/* TCP_CORK for FreeBSD */
 #ifdef TCP_NOPUSH
 	optval = 1;
 	setsockopt(sock, IPPROTO_TCP, TCP_NOPUSH, &optval, sizeof(int));
 #endif
 
+/*
+ * Disable Nagle algorithm, which means to sent segments as soon as possible.
+ */
 #ifdef TCP_NODELAY
 	optval = 0;
 	setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(int));
@@ -81,6 +86,10 @@ xsendfile(int fd, int sock)
 		count = st.st_size;
 	}
 
+/*
+ * If we are on the said operating systems, use some special method for data
+ * transfer.
+ */
 #if !defined(__linux__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
 	count = 0;
 #endif
@@ -101,6 +110,7 @@ xsendfile(int fd, int sock)
 		return 0;
 	}
 
+/* Different sendfile(2) implementations on different platforms. :/ */
 #ifdef __linux__
 	return sendfile(sock, fd, NULL, count);
 #endif
