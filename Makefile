@@ -1,7 +1,7 @@
 # geomyidae - a tiny, standalone gopherd written in C
 # See LICENSE file for copyright and license details.
 NAME = geomyidae
-VERSION = 0.28
+VERSION = 0.29
 
 PREFIX ?= /usr
 BINDIR ?= $(PREFIX)/bin
