@@ -236,18 +236,25 @@ addelem(Elems *e, char *s)
 Elems *
 getadv(char *str)
 {
-	char *b, *e, *o;
+	char *b, *e, *o, *bo;
 	Elems *ret;
 
 	ret = xcalloc(1, sizeof(Elems));
 	if (str[0] == '[') {
 		o = xstrdup(str);
 		b = o + 1;
-		while ((e = strchr(b, '|')) != nil) {
+		bo = b;
+		while ((e = strchr(bo, '|')) != nil) {
+			if (e != bo && e[-1] == '\\') {
+				memmove(&e[-1], e, strlen(e));
+				bo = e;
+				continue;
+			}
 			*e = '\0';
 			e++;
 			addelem(ret, b);
 			b = e;
+			bo = b;
 		}
 
 		e = strchr(b, ']');
