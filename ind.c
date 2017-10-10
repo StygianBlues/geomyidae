@@ -239,7 +239,22 @@ getadv(char *str)
 	char *b, *e, *o, *bo;
 	Elems *ret;
 
+
 	ret = xcalloc(1, sizeof(Elems));
+
+	if (strchr(str, '\t')) {
+		addelem(ret, "i");
+		addelem(ret, "Happy helping ☃ here: You tried to "
+			"output a spurious tab character. This will "
+			"break gopher. Please review your scripts. "
+			"Have a nice day!");
+		addelem(ret, "Err");
+		addelem(ret, "server");
+		addelem(ret, "port");
+
+		return ret;
+	}
+
 	if (str[0] == '[') {
 		o = xstrdup(str);
 		b = o + 1;
