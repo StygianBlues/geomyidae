@@ -199,18 +199,6 @@ In addition, geomyidae provides these:
 Unknown file types default to Type "9" (binary).
 .Ed
 .
-.Bd -filled
-Note: geomyidae doesn't require "informational" text to be formally
-Typed as "[i|...]"; any line
-.Em not
-beginning with "[" is treated as informational, greatly simplifying the
-formatting of index.gph files.  However, if a line begins with a "t", this
-"t" is left out.  This quirk is there to allow "informational" text lines
-beginning with a "[" to display.  For dynamically generated index files
-it may be desirable to either formally Type informational text or run
-it through a filter to add a second "t" - .ie sed 's/^t/&&/' .
-.Ed
-.
 .It Ic <desc>
 = description of gopher item. Most printable characters should work.
 .
@@ -234,6 +222,27 @@ If this is set to
 .Qq "port"
 , the default port of the server is used.
 .El
+.
+.Bd -filled
+Note: geomyidae doesn't require "informational" text to be formally
+Typed as "[i|...]"; any line
+.Em not
+beginning with "[" is treated as informational, greatly simplifying the
+formatting of index.gph files.  However, if a line begins with a "t", this
+"t" is left out.  This quirk is there to allow "informational" text lines
+beginning with a "[" to display.  For dynamically generated index files
+it may be desirable to either formally Type informational text or run
+it through a filter to add a second "t" - .ie sed 's/^t/&&/' .
+.Ed
+.Bd -filled
+Note 2: You can escape a pipe ("|") character in for example a
+.Em <desc>
+field by prepending a slash ("\\").
+.Ed
+.Bd -filled
+Note 3: The gph parser is very forgiving. If the link structure is not parsed
+correctly, then the original line is printed.
+.Ed
 .
 .Ss index.gph Example
 A root.gph file for a server running on host=frog.bog, port=70.  Note use
