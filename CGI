@@ -79,7 +79,7 @@ The client will receive:
 DYNAMIC CGI
 
 For using dynamic CGI, the file needs to end in »dcgi«, which will switch on
-the interpretation of the returned lines by the script. The interpreted for-
+the interpretation of the returned lines by the server. The interpreted for-
 mat is the same as in the *.gph files.
 
 	% cat test.dcgi
@@ -92,6 +92,12 @@ menu item.
 
 	S: 1Some link	/somewhere	gopher.r-36.net	70
 
+For outputting large texts and having minor hassles with the content, prepend
+»t« to every line beginning with »t« or all lines:
+
+	% cat filereader.dcgi
+	#!/bin/sh
+	cat bigfile.txt | sed 's,^t,&&,'
 
 Have fun!
 
