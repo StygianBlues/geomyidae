@@ -406,6 +406,8 @@ main(int argc, char *argv[])
 		case -1:
 			perror("fork");
 			return 1;
+		case 0:
+			break;
 		default:
 			return 0;
 		}
