@@ -42,7 +42,6 @@ install: all
 	@echo installing executable to ${DESTDIR}${PREFIX}/bin
 	@mkdir -p "${DESTDIR}${BINDIR}"
 	@cp -f ${NAME} "${DESTDIR}${BINDIR}"
-	@strip "${DESTDIR}${BINDIR}/${NAME}"
 	@chmod 755 "${DESTDIR}${BINDIR}/${NAME}"
 	@echo installing manpage to "${DESTDIR}${MANDIR}"
 	@mkdir -p "${DESTDIR}${MANDIR}"
