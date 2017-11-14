@@ -1,36 +1,38 @@
 # geomyidae - a tiny, standalone gopherd written in C
 # See LICENSE file for copyright and license details.
+.POSIX:
+
 NAME = geomyidae
 VERSION = 0.29
 
-PREFIX ?= /usr
-BINDIR ?= $(PREFIX)/bin
-MANDIR ?= $(PREFIX)/share/man/man8
+PREFIX = /usr
+BINDIR = ${PREFIX}/bin
+MANDIR = ${PREFIX}/share/man/man8
 
-CFLAGS += -O2 -Wall -I. -I/usr/include
-LDFLAGS += -L/usr/lib -L. -lc
-CC = cc
+CFLAGS = -O2 -Wall
+GEOM_CFLAGS = -D_DEFAULT_SOURCE -I. -I/usr/include ${CFLAGS}
+GEOM_LDFLAGS = -L/usr/lib -L. ${LDFLAGS}
 
 SRC = main.c ind.c handlr.c
 OBJ = ${SRC:.c=.o}
 
-all: options $(NAME)
+all: options ${NAME}
 
 options:
 	@echo ${NAME} build options:
-	@echo "CFLAGS   = ${CFLAGS}"
-	@echo "LDFLAGS  = ${LDFLAGS}"
+	@echo "CFLAGS   = ${GEOM_CFLAGS}"
+	@echo "LDFLAGS  = ${GEOM_LDFLAGS}"
 	@echo "CC       = ${CC}"
 
 .c.o:
 	@echo CC $<
-	@${CC} ${CFLAGS} -c $<
+	@${CC} ${GEOM_CFLAGS} -c $<
 
 ${OBJ}:
 
 ${NAME}: ${OBJ}
 	@echo CC -o $@
-	@${CC} -o $@ ${OBJ} ${LDFLAGS}
+	@${CC} -o $@ ${OBJ} ${GEOM_LDFLAGS}
 
 clean:
 	@echo cleaning
@@ -38,20 +40,20 @@ clean:
 
 install: all
 	@echo installing executable to ${DESTDIR}${PREFIX}/bin
-	@mkdir -p ${DESTDIR}${BINDIR}
-	@cp -f ${NAME} ${DESTDIR}${BINDIR}
-	@strip ${DESTDIR}${BINDIR}/${NAME}
-	@chmod 755 ${DESTDIR}${BINDIR}/${NAME}
-	@echo installing manpage to ${DESTDIR}${MANDIR}
-	@mkdir -p ${DESTDIR}${MANDIR}
-	@cp -f ${NAME}.8 ${DESTDIR}${MANDIR}
-	@chmod 644 ${DESTDIR}${MANDIR}/${NAME}.8
+	@mkdir -p "${DESTDIR}${BINDIR}"
+	@cp -f ${NAME} "${DESTDIR}${BINDIR}"
+	@strip "${DESTDIR}${BINDIR}/${NAME}"
+	@chmod 755 "${DESTDIR}${BINDIR}/${NAME}"
+	@echo installing manpage to "${DESTDIR}${MANDIR}"
+	@mkdir -p "${DESTDIR}${MANDIR}"
+	@cp -f ${NAME}.8 "${DESTDIR}${MANDIR}"
+	@chmod 644 "${DESTDIR}${MANDIR}/${NAME}.8"
 
 uninstall:
-	@echo removing executable file from ${DESTDIR}${PREFIX}/bin
-	@rm -f ${DESTDIR}${BINDIR}/${NAME}
-	@echo removing manpage from ${DESTDIR}${MANDIR}
-	@rm -f ${DESTDIR}${MANDIR}/${NAME}.8
+	@echo removing executable file from "${DESTDIR}${PREFIX}/bin"
+	@rm -f "${DESTDIR}${BINDIR}/${NAME}"
+	@echo removing manpage from "${DESTDIR}${MANDIR}"
+	@rm -f "${DESTDIR}${MANDIR}/${NAME}.8"
 
 dist: clean
 	@echo creating dist tarball
@@ -64,4 +66,3 @@ dist: clean
 	@rm -rf "${NAME}-${VERSION}"
 
 .PHONY: all options clean dist install uninstall
-
