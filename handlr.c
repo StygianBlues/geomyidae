@@ -34,12 +34,12 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 
 	pa = xstrdup(path);
 	e = pa + strlen(pa) - 1;
-	if(e[0] == '/')
+	if (e[0] == '/')
 		*e = '\0';
 
 	par = xstrdup(pa);
 	b = strrchr(par + strlen(base), '/');
-	if(b != nil) {
+	if (b != nil) {
 		*b = '\0';
 		dprintf(sock, "1..\t%s\t%s\t%s\r\n",
 			par + strlen(base), ohost, port);
@@ -47,13 +47,13 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 	free(par);
 
 	ndir = scandir(pa, &dirent, 0, alphasort);
-	if(ndir < 0) {
+	if (ndir < 0) {
 		perror("scandir");
 		free(pa);
 		return;
 	} else {
-		for(i = 0; i < ndir && ret >= 0; i++) {
-			if(dirent[i]->d_name[0] == '.') {
+		for (i = 0; i < ndir && ret >= 0; i++) {
+			if (dirent[i]->d_name[0] == '.') {
 				free(dirent[i]);
 				continue;
 			}
@@ -61,7 +61,7 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 			type = gettype(dirent[i]->d_name);
 			file = smprintf("%s/%s", pa,
 					dirent[i]->d_name);
-			if(stat(file, &st) >= 0 && S_ISDIR(st.st_mode))
+			if (stat(file, &st) >= 0 && S_ISDIR(st.st_mode))
 				type = gettype("index.gph");
 			e = file + strlen(base);
 			ret = dprintf(sock, "%c%s\t%s\t%s\t%s\r\n", *type->type,
@@ -88,8 +88,8 @@ handlegph(int sock, char *file, char *port, char *base, char *args,
 	USED(sear);
 
 	act = scanfile(file);
-	if(act != nil) {
-		for(i = 0; i < act->num && ret >= 0; i++) {
+	if (act != nil) {
+		for (i = 0; i < act->num && ret >= 0; i++) {
 			ret = printelem(sock, act->n[i], ohost, port);
 			freeelem(act->n[i]);
 			act->n[i] = nil;
@@ -113,8 +113,8 @@ handlebin(int sock, char *file, char *port, char *base, char *args,
 	USED(ohost);
 
 	fd = open(file, O_RDONLY);
-	if(fd >= 0) {
-		if(xsendfile(fd, sock) < 0)
+	if (fd >= 0) {
+		if (xsendfile(fd, sock) < 0)
 			perror("sendfile");
 		close(fd);
 	}
@@ -142,15 +142,15 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 	if (p == nil)
 		p = file;
 
-	if(sear == nil)
+	if (sear == nil)
 		sear = "";
-	if(args == nil)
+	if (args == nil)
 		args = "";
 
 	dup2(sock, 0);
 	dup2(sock, 1);
 	dup2(sock, 2);
-	switch(fork()) {
+	switch (fork()) {
 	case 0:
 		if (path != nil) {
 			if (chdir(path) < 0)
@@ -184,7 +184,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 
 	USED(base);
 
-	if(pipe(outpipe) < 0)
+	if (pipe(outpipe) < 0)
 		return;
 
 	path = xstrdup(file);
@@ -197,17 +197,17 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 	}
 
 	p = strrchr(file, '/');
-	if(p == nil)
+	if (p == nil)
 		p = file;
 
-	if(sear == nil)
+	if (sear == nil)
 		sear = "";
-	if(args == nil)
+	if (args == nil)
 		args = "";
 
 	dup2(sock, 0);
 	dup2(sock, 2);
-	switch(fork()) {
+	switch (fork()) {
 	case 0:
 		dup2(outpipe[1], 1);
 		close(outpipe[0]);
@@ -254,3 +254,4 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 		break;
 	}
 }
+

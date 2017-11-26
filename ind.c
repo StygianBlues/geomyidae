@@ -80,8 +80,8 @@ xsendfile(int fd, int sock)
 	setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(int));
 #endif
 
-	if(fstat(fd, &st) >= 0) {
-		if((bufsiz = st.st_blksize) < BUFSIZ)
+	if (fstat(fd, &st) >= 0) {
+		if ((bufsiz = st.st_blksize) < BUFSIZ)
 			bufsiz = BUFSIZ;
 		count = st.st_size;
 	}
@@ -96,8 +96,8 @@ xsendfile(int fd, int sock)
 
 	if (count == 0) {
 		sendb = xmalloc(bufsiz);
-		while((len = read(fd, sendb, bufsiz)) > 0) {
-			while(len > 0) {
+		while ((len = read(fd, sendb, bufsiz)) > 0) {
+			while (len > 0) {
 				if ((sent = send(sock, sendb, len, 0)) < 0) {
 					close(fd);
 					free(sendb);
@@ -177,12 +177,12 @@ gettype(char *filename)
 	int i;
 
 	end = strrchr(filename, '.');
-	if(end == nil)
+	if (end == nil)
 		return &type[0];
 	end++;
 
-	for(i = 0; type[i].end != nil; i++)
-		if(!strcasecmp(end, type[i].end))
+	for (i = 0; type[i].end != nil; i++)
+		if (!strcasecmp(end, type[i].end))
 			return &type[i];
 
 	return &type[0];
@@ -191,10 +191,10 @@ gettype(char *filename)
 void
 freeelem(Elems *e)
 {
-	if(e != nil) {
-		if(e->e != nil) {
-			for(;e->num > 0; e->num--)
-				if(e->e[e->num - 1] != nil)
+	if (e != nil) {
+		if (e->e != nil) {
+			for (;e->num > 0; e->num--)
+				if (e->e[e->num - 1] != nil)
 					free(e->e[e->num - 1]);
 			free(e->e);
 		}
@@ -206,9 +206,9 @@ freeelem(Elems *e)
 void
 freeindex(Indexs *i)
 {
-	if(i != nil) {
-		if(i->n != nil) {
-			for(;i->num > 0; i->num--)
+	if (i != nil) {
+		if (i->n != nil) {
+			for (;i->num > 0; i->num--)
 				freeelem(i->n[i->num - 1]);
 			free(i->n);
 		}
@@ -287,7 +287,7 @@ getadv(char *str)
 	}
 
 	b = str;
-	if(*str == 't')
+	if (*str == 't')
 		b++;
 	addelem(ret, "i");
 	addelem(ret, b);
@@ -337,7 +337,7 @@ scanfile(char *fname)
 	free(ln);
 	fclose(fp);
 
-	if(ret->n == nil) {
+	if (ret->n == nil) {
 		free(ret);
 		return nil;
 	}
@@ -348,11 +348,11 @@ scanfile(char *fname)
 int
 printelem(int fd, Elems *el, char *addr, char *port)
 {
-	if(!strcmp(el->e[3], "server")) {
+	if (!strcmp(el->e[3], "server")) {
 		free(el->e[3]);
 		el->e[3] = xstrdup(addr);
 	}
-	if(!strcmp(el->e[4], "port")) {
+	if (!strcmp(el->e[4], "port")) {
 		free(el->e[4]);
 		el->e[4] = xstrdup(port);
 	}
@@ -406,14 +406,14 @@ reverselookup(char *host)
 
 	rethost = NULL;
 
-	if(inet_pton(AF_INET, host, &hoststr)) {
+	if (inet_pton(AF_INET, host, &hoststr)) {
 		client = gethostbyaddr((const void *)&hoststr,
 				sizeof(hoststr), AF_INET);
-		if(client != NULL)
+		if (client != NULL)
 			rethost = xstrdup(client->h_name);
 	}
 
-	if(rethost == NULL)
+	if (rethost == NULL)
 		rethost = xstrdup(host);
 
 	return rethost;

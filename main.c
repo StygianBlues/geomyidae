@@ -66,16 +66,16 @@ char *htredir = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 int
 dropprivileges(struct group *gr, struct passwd *pw)
 {
-	if(gr != nil)
-		if(setgroups(1, &gr->gr_gid) != 0 || setgid(gr->gr_gid) != 0)
+	if (gr != nil)
+		if (setgroups(1, &gr->gr_gid) != 0 || setgid(gr->gr_gid) != 0)
 			return -1;
-	if(pw != nil) {
-		if(gr == nil) {
-			if(setgroups(1, &pw->pw_gid) != 0 ||
+	if (pw != nil) {
+		if (gr == nil) {
+			if (setgroups(1, &pw->pw_gid) != 0 ||
 			    setgid(pw->pw_gid) != 0)
 				return -1;
 		}
-		if(setuid(pw->pw_uid) != 0)
+		if (setuid(pw->pw_uid) != 0)
 			return -1;
 	}
 
@@ -89,7 +89,7 @@ logentry(char *host, char *port, char *qry, char *status)
 	struct tm *ptr;
 	char timstr[128], *ahost;
 
-        if(glfd >= 0) {
+        if (glfd >= 0) {
 		tim = time(0);
 		ptr = localtime(&tim);
 
@@ -124,85 +124,86 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 		return;
 
 	c = strchr(recvb, '\r');
-	if(c)
+	if (c)
 		c[0] = '\0';
 	c = strchr(recvb, '\n');
-	if(c)
+	if (c)
 		c[0] = '\0';
 	memmove(recvc, recvb, len+1);
 
-	if(!strncmp(recvb, "URL:", 4)) {
+	if (!strncmp(recvb, "URL:", 4)) {
 		len = snprintf(path, sizeof(path), htredir,
 				recvb + 4, recvb + 4, recvb + 4);
-		if(len > sizeof(path))
+		if (len > sizeof(path))
 			len = sizeof(path);
 		send(sock, path, len, 0);
-		if(loglvl & HTTP)
+		if (loglvl & HTTP)
 			logentry(clienth, clientp, recvc, "HTTP redirect");
 		return;
 	}
 
 	sear = strchr(recvb, '\t');
-	if(sear != nil)
+	if (sear != nil)
 		*sear++ = '\0';
 	args = strchr(recvb, '?');
-	if(args != nil)
+	if (args != nil)
 		*args++ = '\0';
 
-	if(recvb[0] == '\0') {
+	if (recvb[0] == '\0') {
 		recvb[0] = '/';
 		recvb[1] = '\0';
 	}
-	if(recvb[0] != '/' || strstr(recvb, ".."))
+	if (recvb[0] != '/' || strstr(recvb, ".."))
 		return;
 
 	snprintf(path, sizeof(path), "%s%s", base, recvb);
 
 	fd = -1;
-	if(stat(path, &dir) != -1 && S_ISDIR(dir.st_mode)) {
-		for(i = 0; i < sizeof(indexf)/sizeof(indexf)[0]; i++) {
+	if (stat(path, &dir) != -1 && S_ISDIR(dir.st_mode)) {
+		for (i = 0; i < sizeof(indexf)/sizeof(indexf)[0]; i++) {
 			if (strlen(path) + strlen(indexf[i]) >= sizeof(path)) {
-				if(loglvl & ERRORS)
+				if (loglvl & ERRORS)
 					logentry(clienth, clientp, recvc,
 					         "path truncation occurred");
 				return;
 			}
 			strncat(path, indexf[i], sizeof(path) - strlen(path) - 1);
 			fd = open(path, O_RDONLY);
-			if(fd >= 0)
+			if (fd >= 0)
 				break;
 			path[strlen(path)-strlen(indexf[i])] = '\0';
 		}
 	} else {
 		fd = open(path, O_RDONLY);
-		if(fd < 0) {
-			if(loglvl & ERRORS)
+		if (fd < 0) {
+			if (loglvl & ERRORS)
 				logentry(clienth, clientp, recvc, strerror(errno));
 			return;
 		}
 	}
 
-	if(fd >= 0) {
+	if (fd >= 0) {
 		close(fd);
-		if(loglvl & FILES)
+		if (loglvl & FILES)
 			logentry(clienth, clientp, recvc, "serving");
 
 		c = strrchr(path, '/');
-		if(c == nil)
+		if (c == nil)
 			c = path;
 		type = gettype(c);
 		type->f(sock, path, port, base, args, sear, ohost);
 	} else {
-		if(S_ISDIR(dir.st_mode)) {
+		if (S_ISDIR(dir.st_mode)) {
 			handledir(sock, path, port, base, args, sear, ohost);
-			if(loglvl & DIRS)
+			if (loglvl & DIRS) {
 				logentry(clienth, clientp, recvc,
 							"dir listing");
+			}
 			return;
 		}
 
 		dprintf(sock, err, recvc);
-		if(loglvl & ERRORS)
+		if (loglvl & ERRORS)
 			logentry(clienth, clientp, recvc, "not found");
 	}
 
@@ -212,9 +213,9 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 void
 sighandler(int sig)
 {
-	switch(sig) {
+	switch (sig) {
 	case SIGCHLD:
-		while(waitpid(-1, NULL, WNOHANG) > 0);
+		while (waitpid(-1, NULL, WNOHANG) > 0);
 		break;
 	case SIGHUP:
 	case SIGINT:
@@ -222,9 +223,9 @@ sighandler(int sig)
 	case SIGABRT:
 	case SIGTERM:
 	case SIGKILL:
-		if(logfile != nil)
+		if (logfile != nil)
 			stoplogging(glfd);
-		if(listfd >= 0) {
+		if (listfd >= 0) {
 			shutdown(listfd, SHUT_RDWR);
 			close(listfd);
 		}
@@ -259,18 +260,18 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 
 	listfd = -1;
 
-	if(getaddrinfo(bindip, port, hints, &ai))
+	if (getaddrinfo(bindip, port, hints, &ai))
 		return -1;
-	if(ai == nil)
+	if (ai == nil)
 		return -1;
 
 	on = 1;
-	for(rp = ai; rp != nil; rp = rp->ai_next) {
+	for (rp = ai; rp != nil; rp = rp->ai_next) {
 		listfd = socket(rp->ai_family, rp->ai_socktype,
 				rp->ai_protocol);
-		if(listfd < 0)
+		if (listfd < 0)
 			continue;
-		if(setsockopt(listfd, SOL_SOCKET, SO_REUSEADDR, &on,
+		if (setsockopt(listfd, SOL_SOCKET, SO_REUSEADDR, &on,
 					sizeof(on)) < 0) {
 			break;
 		}
@@ -279,18 +280,20 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 		          (void *)&((struct sockaddr_in *)rp->ai_addr)->sin_addr :
 		          (void *)&((struct sockaddr_in6 *)rp->ai_addr)->sin6_addr;
 
-		if(bind(listfd, rp->ai_addr, rp->ai_addrlen) == 0) {
-			if(loglvl & CONN && inet_ntop(rp->ai_family, sinaddr,
-			   addstr, sizeof(addstr)))
+		if (bind(listfd, rp->ai_addr, rp->ai_addrlen) == 0) {
+			if (loglvl & CONN && inet_ntop(rp->ai_family, sinaddr,
+			    addstr, sizeof(addstr))) {
 				logentry(addstr, port, "-", "listening");
+			}
 			break;
 		}
 		close(listfd);
-		if(loglvl & CONN && inet_ntop(rp->ai_family, sinaddr,
-		   addstr, sizeof(addstr)))
+		if (loglvl & CONN && inet_ntop(rp->ai_family, sinaddr,
+		    addstr, sizeof(addstr))) {
 			logentry(addstr, port, "-", "could not bind");
+		}
 	}
-	if(rp == nil)
+	if (rp == nil)
 		return -1;
 	freeaddrinfo(ai);
 
@@ -376,9 +379,9 @@ main(int argc, char *argv[])
 		usage();
 	} ARGEND;
 
-	if(ohost == nil) {
+	if (ohost == nil) {
 		ohost = xcalloc(1, 513);
-		if(gethostname(ohost, 512) < 0) {
+		if (gethostname(ohost, 512) < 0) {
 			perror("gethostname");
 			free(ohost);
 			return 1;
@@ -387,22 +390,22 @@ main(int argc, char *argv[])
 		ohost = xstrdup(ohost);
 	}
 
-	if(group != nil) {
-		if((gr = getgrnam(group)) == nil) {
+	if (group != nil) {
+		if ((gr = getgrnam(group)) == nil) {
 			perror("no such group");
 			return 1;
 		}
 	}
 
-	if(user != nil) {
-		if((us = getpwnam(user)) == nil) {
+	if (user != nil) {
+		if ((us = getpwnam(user)) == nil) {
 			perror("no such user");
 			return 1;
 		}
 	}
 
-	if(dofork) {
-		switch(fork()) {
+	if (dofork) {
+		switch (fork()) {
 		case -1:
 			perror("fork");
 			return 1;
@@ -413,66 +416,66 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if(logfile != nil) {
+	if (logfile != nil) {
 		glfd = initlogging(logfile);
-		if(glfd < 0) {
+		if (glfd < 0) {
 			perror("initlogging");
 			return 1;
 		}
-	} else if(!dofork) {
+	} else if (!dofork) {
 		glfd = 1;
 	}
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_flags = AI_PASSIVE;
 	hints.ai_socktype = SOCK_STREAM;
-	if(bindip)
+	if (bindip)
 		hints.ai_flags |= AI_CANONNAME;
 
 	listfd = -1;
-	if(v6) {
+	if (v6) {
 		hints.ai_family = PF_INET6;
 		listfd = getlistenfd(&hints, bindip, port);
-		if(!v4 && listfd < 0) {
+		if (!v4 && listfd < 0) {
 			perror("getlistenfd6");
 			return 1;
 		}
 	}
-	if(v4 && listfd < 0) {
+	if (v4 && listfd < 0) {
 		hints.ai_family = PF_INET;
 		listfd = getlistenfd(&hints, bindip, port);
-		if(listfd < 0) {
+		if (listfd < 0) {
 			perror("getlistenfd4");
 			return 1;
 		}
 	}
-	if(listfd < 0) {
+	if (listfd < 0) {
 		perror("You did not specify a TCP port.");
 		return 1;
 	}
 
-	if(listen(listfd, 255)) {
+	if (listen(listfd, 255)) {
 		perror("listen");
 		close(listfd);
 		return 1;
 	}
 
-	if(usechroot) {
-		if(chdir(base) < 0) {
+	if (usechroot) {
+		if (chdir(base) < 0) {
 			perror("chdir");
 			return 1;
 		}
 		base = "";
-		if(chroot(".") < 0) {
+		if (chroot(".") < 0) {
 			perror("chroot");
 			return 1;
 		}
-	} else if(*base != '/' && !(base = realpath(base, NULL))) {
+	} else if (*base != '/' && !(base = realpath(base, NULL))) {
 		perror("realpath");
 		return 1;
 	}
 
-	if(dropprivileges(gr, us) < 0) {
+	if (dropprivileges(gr, us) < 0) {
 		perror("dropprivileges");
 		close(listfd);
 		return 1;
@@ -481,10 +484,10 @@ main(int argc, char *argv[])
 	initsignals();
 
 	cltlen = sizeof(clt);
-	while(running) {
+	while (running) {
 		sock = accept(listfd, (struct sockaddr *)&clt, &cltlen);
-		if(sock < 0) {
-			switch(errno) {
+		if (sock < 0) {
+			switch (errno) {
 			case ECONNABORTED:
 			case EINTR:
 				if (!running) {
@@ -504,10 +507,10 @@ main(int argc, char *argv[])
 				sizeof(clienth), clientp, sizeof(clientp),
 				NI_NUMERICHOST|NI_NUMERICSERV);
 
-		if(loglvl & CONN)
+		if (loglvl & CONN)
 			logentry(clienth, clientp, "-", "connected");
 
-		switch(fork()) {
+		switch (fork()) {
 		case -1:
 			perror("fork");
 			shutdown(sock, SHUT_RDWR);
@@ -528,13 +531,13 @@ main(int argc, char *argv[])
 			break;
 		}
 		close(sock);
-		if(loglvl & CONN)
+		if (loglvl & CONN)
 			logentry(clienth, clientp, "-", "disconnected");
 	}
 
 	shutdown(listfd, SHUT_RDWR);
 	close(listfd);
-	if(logfile != nil)
+	if (logfile != nil)
 		stoplogging(glfd);
 	free(ohost);
 
