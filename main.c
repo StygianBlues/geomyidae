@@ -94,11 +94,10 @@ logentry(char *host, char *port, char *qry, char *status)
 		ptr = localtime(&tim);
 
 		ahost = reverselookup(host);
-		strftime(timstr, sizeof(timstr), "%a %b %d %H:%M:%S %Z %Y",
-					ptr);
+		strftime(timstr, sizeof(timstr), "%F %T %z", ptr);
 
-		dprintf(glfd, "[%s|%s|%s] %s (%s)\n",
-			timstr, ahost, port, qry, status);
+		dprintf(glfd, "[%s|%s|%s|%s] %s\n",
+			timstr, ahost, port, status, qry);
 		free(ahost);
         }
 
