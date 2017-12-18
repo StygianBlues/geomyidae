@@ -97,7 +97,7 @@ logentry(char *host, char *port, char *qry, char *status)
 		strftime(timstr, sizeof(timstr), "%a %b %d %H:%M:%S %Z %Y",
 					ptr);
 
-		dprintf(glfd, "[%s|%s:%s] %s (%s)\n",
+		dprintf(glfd, "[%s|%s|%s] %s (%s)\n",
 			timstr, ahost, port, qry, status);
 		free(ahost);
         }
