@@ -39,7 +39,7 @@ clean:
 	@rm -f ${NAME} ${OBJ} ${NAME}-${VERSION}.tar.gz
 
 install: all
-	@echo installing executable to ${DESTDIR}${PREFIX}/bin
+	@echo installing executable to ${DESTDIR}${BINDIR}
 	@mkdir -p "${DESTDIR}${BINDIR}"
 	@cp -f ${NAME} "${DESTDIR}${BINDIR}"
 	@chmod 755 "${DESTDIR}${BINDIR}/${NAME}"
@@ -49,7 +49,7 @@ install: all
 	@chmod 644 "${DESTDIR}${MANDIR}/${NAME}.8"
 
 uninstall:
-	@echo removing executable file from "${DESTDIR}${PREFIX}/bin"
+	@echo removing executable file from ${DESTDIR}${BINDIR}
 	@rm -f "${DESTDIR}${BINDIR}/${NAME}"
 	@echo removing manpage from "${DESTDIR}${MANDIR}"
 	@rm -f "${DESTDIR}${MANDIR}/${NAME}.8"
