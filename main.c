@@ -99,7 +99,8 @@ logentry(char *host, char *port, char *qry, char *status)
 
 		dprintf(glfd, "[%s|%s|%s|%s] %s\n",
 			timstr, ahost, port, status, qry);
-		free(ahost);
+		if (revlookup)
+			free(ahost);
         }
 
 	return;
