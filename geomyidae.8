@@ -15,6 +15,7 @@
 .Op Fl 6
 .Op Fl c
 .Op Fl d
+.Op Fl n
 .Op Fl l Ar logfile
 .Op Fl v Ar loglevel
 .Op Fl b Ar base
@@ -96,6 +97,9 @@ directory (by default off).
 .It Fl d
 Don't fork into background. If no log file is given, this implies logging to
 the standard output.
+.
+.It Fl n
+Don't perform reverse lookups.
 .
 .It Fl l Ar logfile
 Specify file where log output is written (no default)
