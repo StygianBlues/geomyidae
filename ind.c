@@ -419,3 +419,43 @@ reverselookup(char *host)
 	return rethost;
 }
 
+void
+setcgienviron(char *file, char *path, char *port, char *base, char *args,
+		char *sear, char *ohost, char *chost)
+{
+	char *s;
+
+	unsetenv("AUTH_TYPE");
+	unsetenv("CONTENT_LENGTH");
+	unsetenv("CONTENT_TYPE");
+	setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
+	/* TODO: Separate, if run like rest.dcgi. */
+	setenv("PATH_INFO", path, 1);
+
+	s = smprintf("%s/%s", base, path);
+	setenv("PATH_TRANSLATED", s, 1);
+	free(s);
+
+	setenv("QUERY_STRING", args, 1);
+	setenv("REMOTE_ADDR", chost, 1);
+	/*
+	 * Don't do a reverse lookup on every call. Only do when needed, in
+	 * the script. The RFC allows us to set the IP to the value.
+	 */
+	setenv("REMOTE_HOST", chost, 1);
+	unsetenv("REMOTE_IDENT");
+	unsetenv("REMOTE_USER");
+	/*
+	 * Only GET is possible in gopher. POST emulation would be really
+	 * ugly.
+	 */
+	setenv("REQUEST_METHOD", "GET", 1);
+	setenv("SCRIPT_NAME", file, 1);
+	setenv("SERVER_NAME", ohost, 1);
+	setenv("SERVER_PORT", port, 1);
+	setenv("SERVER_PROTOCOL", "gopher/1.0", 1);
+	setenv("SERVER_SOFTWARE", "geomyidae", 1);
+
+	setenv("X_GOPHER_SEARCH", sear, 1);
+}
+

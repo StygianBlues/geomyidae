@@ -192,10 +192,11 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 		if (c == nil)
 			c = path;
 		type = gettype(c);
-		type->f(sock, path, port, base, args, sear, ohost);
+		type->f(sock, path, port, base, args, sear, ohost, clienth);
 	} else {
 		if (S_ISDIR(dir.st_mode)) {
-			handledir(sock, path, port, base, args, sear, ohost);
+			handledir(sock, path, port, base, args, sear, ohost,
+				clienth);
 			if (loglvl & DIRS) {
 				logentry(clienth, clientp, recvc,
 							"dir listing");

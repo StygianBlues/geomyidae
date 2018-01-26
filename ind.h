@@ -27,7 +27,8 @@ typedef struct filetype filetype;
 struct filetype {
         char *end;
         char *type;
-        void (* f)(int, char *, char *, char *, char *, char *, char *);
+        void (* f)(int, char *, char *, char *, char *, char *, char *,
+		char *);
 };
 
 filetype *gettype(char *filename);
@@ -47,6 +48,8 @@ int initlogging(char *logf);
 void stoplogging(int fd);
 char *smprintf(char *fmt, ...);
 char *reverselookup(char *host);
+void setcgienviron(char *file, char *path, char *port, char *base,
+		char *args, char *sear, char *ohost, char *chost);
 
 #endif
 

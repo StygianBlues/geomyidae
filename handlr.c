@@ -21,7 +21,7 @@
 
 void
 handledir(int sock, char *path, char *port, char *base, char *args,
-		char *sear, char *ohost)
+		char *sear, char *ohost, char *chost)
 {
 	char *pa, *file, *e, *par, *b;
 	struct dirent **dirent;
@@ -78,7 +78,7 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 
 void
 handlegph(int sock, char *file, char *port, char *base, char *args,
-		char *sear, char *ohost)
+		char *sear, char *ohost, char *chost)
 {
 	Indexs *act;
 	int i, ret = 0;
@@ -102,7 +102,7 @@ handlegph(int sock, char *file, char *port, char *base, char *args,
 
 void
 handlebin(int sock, char *file, char *port, char *base, char *args,
-		char *sear, char *ohost)
+		char *sear, char *ohost, char *chost)
 {
 	int fd;
 
@@ -122,7 +122,7 @@ handlebin(int sock, char *file, char *port, char *base, char *args,
 
 void
 handlecgi(int sock, char *file, char *port, char *base, char *args,
-		char *sear, char *ohost)
+		char *sear, char *ohost, char *chost)
 {
 	char *p, *path;
 
@@ -157,7 +157,10 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 				break;
 		}
 
-		if (execl(file, p, sear, args, ohost, port, (char *)nil) == -1) {
+		setcgienviron(p, file, port, base, args, sear, ohost, chost);
+
+		if (execl(file, p, sear, args, ohost, port,
+				(char *)nil) == -1) {
 			perror("execl");
 			_exit(1);
 		}
@@ -173,7 +176,7 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 
 void
 handledcgi(int sock, char *file, char *port, char *base, char *args,
-		char *sear, char *ohost)
+		char *sear, char *ohost, char *chost)
 {
 	FILE *fp;
 	char *p, *path, *ln = nil;
@@ -216,7 +219,10 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 				break;
 		}
 
-		if (execl(file, p, sear, args, ohost, port, (char *)nil) == -1) {
+		setcgienviron(p, file, port, base, args, sear, ohost, chost);
+
+		if (execl(file, p, sear, args, ohost, port,
+				(char *)nil) == -1) {
 			perror("execl");
 			_exit(1);
 		}
