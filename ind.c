@@ -423,19 +423,14 @@ void
 setcgienviron(char *file, char *path, char *port, char *base, char *args,
 		char *sear, char *ohost, char *chost)
 {
-	char *s;
 
 	unsetenv("AUTH_TYPE");
 	unsetenv("CONTENT_LENGTH");
 	unsetenv("CONTENT_TYPE");
 	setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
 	/* TODO: Separate, if run like rest.dcgi. */
-	setenv("PATH_INFO", path, 1);
-
-	s = smprintf("%s/%s", base, path);
-	setenv("PATH_TRANSLATED", s, 1);
-	free(s);
-
+	setenv("PATH_INFO", file, 1);
+	setenv("PATH_TRANSLATED", path, 1);
 	setenv("QUERY_STRING", args, 1);
 	setenv("REMOTE_ADDR", chost, 1);
 	/*
