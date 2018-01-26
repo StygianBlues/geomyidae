@@ -327,6 +327,23 @@ where
 All terms are tab-separated (per gopher protocol) which can cause some
 surprises depending on how a script is written.  See the CGI file (included
 in the geomyidae source archive) for further elaboration.
+.Pp
+Additionally to the above arguments several environment variables are set.
+.Pp
+.Dl GATEWAY_INTERFACE = `CGI/1.1'
+.Dl PATH_INFO = script which is executed
+.Dl PATH_TRANSLATED = absolute path with script which is executed
+.Dl QUERY_STRING = arguments (See above.)
+.Dl REMOTE_ADDR = IP of the client
+.Dl REMOTE_HOST = REMOTE_ADDR
+.Dl REQUEST_METHOD = GET
+.Dl SCRIPT_NAME = script which is executed
+.Dl SERVER_NAME = server's hostname
+.Dl SERVER_PORT = server's port
+.Dl SERVER_PROTOCOL = `gopher/1.0'
+.Dl SERVER_SOFTWARE = `geomyidae'
+.Dl X_GOPHER_SEARCH = search (See above.)
+.Pp
 .
 .Ss Some CGI Examples
 Note: these are a very simple examples with no fitness checks with respect
