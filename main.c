@@ -512,6 +512,9 @@ main(int argc, char *argv[])
 				sizeof(clienth), clientp, sizeof(clientp),
 				NI_NUMERICHOST|NI_NUMERICSERV);
 
+		if (!strncmp(clienth, "::ffff:", 7))
+			memmove(clienth, clienth+7, strlen(clienth)-6);
+
 		if (loglvl & CONN)
 			logentry(clienth, clientp, "-", "connected");
 
