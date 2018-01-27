@@ -440,6 +440,8 @@ setcgienviron(char *file, char *path, char *port, char *base, char *args,
 	setenv("REMOTE_HOST", chost, 1);
 	unsetenv("REMOTE_IDENT");
 	unsetenv("REMOTE_USER");
+	/* Make PHP happy. */
+	setenv("REDIRECT_STATUS", "", 1);
 	/*
 	 * Only GET is possible in gopher. POST emulation would be really
 	 * ugly.
