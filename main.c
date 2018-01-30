@@ -130,6 +130,20 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	c = strchr(recvb, '\n');
 	if (c)
 		c[0] = '\0';
+	sear = strchr(recvb, '\t');
+	if (sear != nil) {
+		*sear++ = '\0';
+
+		/* Gopher+ compatibility hack. */
+		if (*sear == '+' || *sear == '$' || *sear == '!') {
+			dprintf(sock, "+-2\r\n");
+			dprintf(sock, "+INFO: 1gopher+\t\t%s\t%s\r\n",
+					ohost, port);
+			dprintf(sock, "+ADMIN:\r\n Admin: Me\r\n");
+			return;
+		}
+	}
+
 	memmove(recvc, recvb, len+1);
 
 	if (!strncmp(recvb, "URL:", 4)) {
@@ -143,9 +157,6 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 		return;
 	}
 
-	sear = strchr(recvb, '\t');
-	if (sear != nil)
-		*sear++ = '\0';
 	args = strchr(recvb, '?');
 	if (args != nil)
 		*args++ = '\0';
