@@ -134,8 +134,15 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	if (sear != nil) {
 		*sear++ = '\0';
 
-		/* Gopher+ compatibility hack. */
-		if (*sear == '+' || *sear == '$' || *sear == '!') {
+		/*
+		 * This is a compatibility layer to geomyidae for users using
+		 * the original gopher(1) client. Gopher+ is by default
+		 * requesting the metadata. We are using a trick in the
+		 * gopher(1) parsing code to jump back to gopher compatibility
+		 * mode. DO NOT ADD ANY OTHER GOPHER+ SUPPORT. GOPHER+ IS
+		 * CRAP.
+		 */
+		if (*sear == '+' || *sear == '$' || *sear == '!' || *sear == '\0') {
 			dprintf(sock, "+-2\r\n");
 			dprintf(sock, "+INFO: 1gopher+\t\t%s\t%s\r\n",
 					ohost, port);
