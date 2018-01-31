@@ -449,7 +449,7 @@ recursions, and/or unintended writes in the working directory.
 The log file (ie. /var/log/gopherd.log) has the following structure:
 .
 .Pp
-.Ic [<date>|<IP:port>] <item path> <query> (<status>)
+.Ic [<date>|<IP/Host>|<port>|<status>] <item path>
 .
 .Pp
 where,
@@ -459,36 +459,36 @@ where,
 = access date and time (std 'date' format)
 .Pp
  ex.
-.Qq "Sun Feb 17 06:11:10 PST 2008"
-.It Ic <IP:port>
-= client IP address and port served
+.Qq "2018-01-31 14:18:34 +0000"
+.It Ic <IP/Host>
+= client IP/Host served
 .Pp
 ex.
-.Qq "24.208.18.127:16857"
+.Qq "104.23.33.1"
+.It Ic <port>
+= client port served
+.Pp
+ex.
+.Qq "16857"
+.It Ic <status>
+= status of client request
+.Pp
+ex. - some common status entries:
+.It Qo serving Qc
+=> a successful request
+.It Qo not found Qc
+=> an unsuccessful request
+.It Qo HTTP redirect Qc
+=> web link redirect (Type h)
+.It Qo dir listing Qc
+=> unindexed directory listing
+.Pp
 .It Ic <item path>
 = full path to item served
 .Pp
 ex.
 .D1 Qo "/PICS/simple2.jpg" Qc for an image file
 .D1 Qo "/PICS" Qc for a directory access
-.It Ic <query>
-= query term submitted (Type 7 requests only)
-.Pp
-ex.
-.Dl % snarf Qq "gopher://frog.bog/7/hello.cgi?Christoph"
-.Dl would log Qo "Christoph" Qc as the query term.
-.It Ic (<status>)
-= status of client request
-.Pp
-ex. - some common status entries:
-.It Qo (serving) Qc
-=> a successful request
-.It Qo (not found) Qc
-=> an unsuccessful request
-.It Qo (HTTP redirect) Qc
-=> web link redirect (Type h)
-.It Qo (dir listing) Qc
-=> unindexed directory listing
 .El
 .
 .Sh FILES
