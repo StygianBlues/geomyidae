@@ -328,6 +328,13 @@ All terms are tab-separated (per gopher protocol) which can cause some
 surprises depending on how a script is written.  See the CGI file (included
 in the geomyidae source archive) for further elaboration.
 .Pp
+QUIRK: The original gopher client tried to be too intellignet. It is using
+gopher+ when you request some resource. When "search" is just the value "+",
+"!", "$" or empty, geomyidae will display a gopher+ redirect instead of invoking the
+script. Be careful to design your search script so the user is unlikely to
+enter those values. The designers of gopher+ did not think of classic gopher
+to survive. It survived gopher+.
+.Pp
 Additionally to the above arguments several environment variables are set.
 .Pp
 .Dl GATEWAY_INTERFACE = `CGI/1.1'
