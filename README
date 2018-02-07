@@ -3,7 +3,7 @@ A gopherd for Linux/BSD.
 Features:
 	* gopher menus (see index.gph for an example)
 	* dir listings (if no index.gph was found)
-	* cgi support (.cgi files are executed)
+	* CGI support (.cgi files are executed)
 	* search support in CGI files
 	* logging (-l option) and loglevels (-v option)
 

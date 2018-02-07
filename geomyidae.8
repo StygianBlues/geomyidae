@@ -328,6 +328,13 @@ All terms are tab-separated (per gopher protocol) which can cause some
 surprises depending on how a script is written.  See the CGI file (included
 in the geomyidae source archive) for further elaboration.
 .Pp
+QUIRK: The original gopher client tried to be too intelligent. It is using
+gopher+ when you request some resource. When "search" is just the value "+",
+"!", "$" or empty, geomyidae will display a gopher+ redirect instead of invoking the
+script. Be careful to design your search script so the user is unlikely to
+enter those values. The designers of gopher+ did not think of classic gopher
+to survive. It survived gopher+.
+.Pp
 Additionally to the above arguments several environment variables are set.
 .Pp
 .Dl GATEWAY_INTERFACE = `CGI/1.1'
@@ -442,7 +449,7 @@ recursions, and/or unintended writes in the working directory.
 The log file (ie. /var/log/gopherd.log) has the following structure:
 .
 .Pp
-.Ic [<date>|<IP:port>] <item path> <query> (<status>)
+.Ic [<date>|<IP/Host>|<port>|<status>] <item path>
 .
 .Pp
 where,
@@ -452,40 +459,40 @@ where,
 = access date and time (std 'date' format)
 .Pp
  ex.
-.Qq "Sun Feb 17 06:11:10 PST 2008"
-.It Ic <IP:port>
-= client IP address and port served
+.Qq "2018-01-31 14:18:34 +0000"
+.It Ic <IP/Host>
+= client IP/Host served
 .Pp
 ex.
-.Qq "24.208.18.127:16857"
+.Qq "104.23.33.1"
+.It Ic <port>
+= client port served
+.Pp
+ex.
+.Qq "16857"
+.It Ic <status>
+= status of client request
+.Pp
+ex. - some common status entries:
+.It Qo serving Qc
+=> a successful request
+.It Qo not found Qc
+=> an unsuccessful request
+.It Qo HTTP redirect Qc
+=> web link redirect (Type h)
+.It Qo dir listing Qc
+=> unindexed directory listing
+.Pp
 .It Ic <item path>
 = full path to item served
 .Pp
 ex.
 .D1 Qo "/PICS/simple2.jpg" Qc for an image file
 .D1 Qo "/PICS" Qc for a directory access
-.It Ic <query>
-= query term submitted (Type 7 requests only)
-.Pp
-ex.
-.Dl % snarf Qq "gopher://frog.bog/7/hello.cgi?Christoph"
-.Dl would log Qo "Christoph" Qc as the query term.
-.It Ic (<status>)
-= status of client request
-.Pp
-ex. - some common status entries:
-.It Qo (serving) Qc
-=> a successful request
-.It Qo (not found) Qc
-=> an unsuccessful request
-.It Qo (HTTP redirect) Qc
-=> web link redirect (Type h)
-.It Qo (dir listing) Qc
-=> unindexed directory listing
 .El
 .
 .Sh FILES
-README, LICENSE, CGI, index.gph, rc.d/
+README, LICENSE, CGI, index.gph, rc.d/, LINKS, gph/
 .
 .Sh SEE ALSO
 Links for further information on gopher:

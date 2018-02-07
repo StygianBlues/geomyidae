@@ -247,8 +247,10 @@ sighandler(int sig)
 	case SIGABRT:
 	case SIGTERM:
 	case SIGKILL:
-		if (logfile != nil)
-			stoplogging(glfd);
+		if (logfile != nil && glfd != -1) {
+			close(glfd);
+			glfd = -1;
+		}
 		if (listfd >= 0) {
 			shutdown(listfd, SHUT_RDWR);
 			close(listfd);
@@ -448,9 +450,9 @@ main(int argc, char *argv[])
 	}
 
 	if (logfile != nil) {
-		glfd = initlogging(logfile);
+		glfd = open(logfile, O_APPEND | O_WRONLY | O_CREAT, 0644);
 		if (glfd < 0) {
-			perror("initlogging");
+			perror("log");
 			return 1;
 		}
 	} else if (!dofork) {
@@ -573,8 +575,10 @@ main(int argc, char *argv[])
 
 	shutdown(listfd, SHUT_RDWR);
 	close(listfd);
-	if (logfile != nil)
-		stoplogging(glfd);
+	if (logfile != nil && glfd != -1) {
+		close(glfd);
+		glfd = -1;
+	}
 	free(ohost);
 
 	return 0;

@@ -46,8 +46,6 @@ void addindexs(Indexs *idx, Elems *el);
 void addelem(Elems *e, char *s);
 void freeindex(Indexs *i);
 void freeelem(Elems *e);
-int initlogging(char *logf);
-void stoplogging(int fd);
 char *smprintf(char *fmt, ...);
 char *reverselookup(char *host);
 void setcgienviron(char *file, char *path, char *port, char *base,

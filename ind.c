@@ -262,7 +262,6 @@ getadv(char *str)
 	char *b, *e, *o, *bo;
 	Elems *ret;
 
-
 	ret = xcalloc(1, sizeof(Elems));
 
 	if (strchr(str, '\t')) {
@@ -385,20 +384,6 @@ printelem(int fd, Elems *el, char *addr, char *port)
 		return -1;
 	}
 	return 0;
-}
-
-int
-initlogging(char *logf)
-{
-	return open(logf, O_APPEND | O_WRONLY | O_CREAT, 0644);
-}
-
-void
-stoplogging(int fd)
-{
-	close(fd);
-
-	return;
 }
 
 char *
