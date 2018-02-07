@@ -118,7 +118,7 @@ xsendfile(int fd, int sock)
 	count = 0;
 #endif
 
-	if (count > 0) {
+	if (count == 0) {
 		sendb = xmalloc(bufsiz);
 		while ((len = read(fd, sendb, bufsiz)) > 0) {
 			sendi = sendb;
