@@ -16,15 +16,18 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
+#include <sys/ioctl.h>
 
-/* for sendfile(2) */
+/* for sendfile(2) and SIOCOUTQ */
 #ifdef __linux__
 #include <sys/sendfile.h>
+#include <linux/sockios.h>
 #elif defined(__FreeBSD__) || defined(__DragonFly__)
 #include <sys/types.h>
 #include <sys/uio.h>
 #endif
 
+#include "arg.h"
 #include "ind.h"
 #include "handlr.h"
 
@@ -53,12 +56,33 @@ filetype type[] = {
 };
 
 int
+pendingbytes(int sock)
+{
+	int pending;
+
+	pending = 0;
+	ioctl(sock, SIOCOUTQ, &pending);
+
+	return pending;
+}
+
+void
+waitforpendingbytes(int sock)
+{
+
+	while (pendingbytes(sock) > 0)
+		usleep(10);
+}
+
+int
 xsendfile(int fd, int sock)
 {
 	struct stat st;
 	char *sendb;
 	size_t bufsiz = BUFSIZ, count = 0;
 	int len, sent, optval;
+
+	USED(optval);
 
 /* Tell the kernel to not send small packets on every write. */
 #ifdef TCP_CORK
@@ -94,12 +118,11 @@ xsendfile(int fd, int sock)
 	count = 0;
 #endif
 
-	if (count == 0) {
+	if (count > 0) {
 		sendb = xmalloc(bufsiz);
 		while ((len = read(fd, sendb, bufsiz)) > 0) {
 			while (len > 0) {
 				if ((sent = send(sock, sendb, len, 0)) < 0) {
-					close(fd);
 					free(sendb);
 					return -1;
 				}

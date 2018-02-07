@@ -116,7 +116,6 @@ handlebin(int sock, char *file, char *port, char *base, char *args,
 	if (fd >= 0) {
 		if (xsendfile(fd, sock) < 0)
 			perror("sendfile");
-		close(fd);
 	}
 }
 

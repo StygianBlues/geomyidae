@@ -39,6 +39,8 @@ char *xstrdup(const char *str);
 int xsendfile(int, int);
 Indexs *scanfile(char *fname);
 Elems *getadv(char *str);
+int pendingbytes(int sock);
+void waitforpendingbytes(int sock);
 int printelem(int fd, Elems *el, char *addr, char *port);
 void addindexs(Indexs *idx, Elems *el);
 void addelem(Elems *e, char *s);

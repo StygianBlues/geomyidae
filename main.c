@@ -15,6 +15,8 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
+#include <linux/sockios.h>
 #include <signal.h>
 #include <string.h>
 #include <strings.h>
@@ -39,7 +41,6 @@ enum {
 
 int glfd = -1;
 int loglvl = 15;
-int running = 1;
 int listfd = -1;
 int revlookup = 1;
 char *logfile = nil;
@@ -121,8 +122,11 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	args = nil;
 
 	len = recv(sock, recvb, sizeof(recvb)-1, 0);
-	if (len <= 0)
+	if (len <= 0) {
+		if (len < 0)
+			perror("recv");
 		return;
+	}
 
 	c = strchr(recvb, '\r');
 	if (c)
@@ -293,6 +297,7 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 			continue;
 		if (setsockopt(listfd, SOL_SOCKET, SO_REUSEADDR, &on,
 					sizeof(on)) < 0) {
+			close(listfd);
 			break;
 		}
 
@@ -402,6 +407,9 @@ main(int argc, char *argv[])
 		usage();
 	} ARGEND;
 
+	if (argc != 0)
+		usage();
+
 	if (ohost == nil) {
 		ohost = xcalloc(1, 513);
 		if (gethostname(ohost, 512) < 0) {
@@ -507,17 +515,12 @@ main(int argc, char *argv[])
 	initsignals();
 
 	cltlen = sizeof(clt);
-	while (running) {
+	while (1) {
 		sock = accept(listfd, (struct sockaddr *)&clt, &cltlen);
 		if (sock < 0) {
 			switch (errno) {
 			case ECONNABORTED:
 			case EINTR:
-				if (!running) {
-					shutdown(listfd, SHUT_RDWR);
-					close(listfd);
-					return 0;
-				}
 				continue;
 			default:
 				perror("accept");
@@ -542,6 +545,8 @@ main(int argc, char *argv[])
 			shutdown(sock, SHUT_RDWR);
 			break;
 		case 0:
+			close(listfd);
+
 			signal(SIGHUP, SIG_DFL);
 			signal(SIGQUIT, SIG_DFL);
 			signal(SIGINT, SIG_DFL);
@@ -550,15 +555,20 @@ main(int argc, char *argv[])
 
 			handlerequest(sock, base, ohost, sport, clienth,
 						clientp);
+
+			waitforpendingbytes(sock);
+
 			shutdown(sock, SHUT_RDWR);
 			close(sock);
+
+			if (loglvl & CONN)
+				logentry(clienth, clientp, "-", "disconnected");
+
 			return 0;
 		default:
 			break;
 		}
 		close(sock);
-		if (loglvl & CONN)
-			logentry(clienth, clientp, "-", "disconnected");
 	}
 
 	shutdown(listfd, SHUT_RDWR);
