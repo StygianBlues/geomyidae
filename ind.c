@@ -71,7 +71,6 @@ pendingbytes(int sock)
 void
 waitforpendingbytes(int sock)
 {
-
 	while (pendingbytes(sock) > 0)
 		usleep(10);
 }
