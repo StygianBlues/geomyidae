@@ -61,7 +61,9 @@ pendingbytes(int sock)
 	int pending;
 
 	pending = 0;
+#ifdef SIOCOUTQ
 	ioctl(sock, SIOCOUTQ, &pending);
+#endif
 
 	return pending;
 }
