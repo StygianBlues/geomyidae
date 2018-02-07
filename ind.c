@@ -18,10 +18,9 @@
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
 
-/* for sendfile(2) and SIOCOUTQ */
+/* for sendfile(2) */
 #ifdef __linux__
 #include <sys/sendfile.h>
-#include <linux/sockios.h>
 #elif defined(__FreeBSD__) || defined(__DragonFly__)
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -61,8 +60,8 @@ pendingbytes(int sock)
 	int pending;
 
 	pending = 0;
-#ifdef SIOCOUTQ
-	ioctl(sock, SIOCOUTQ, &pending);
+#ifdef TIOCOUTQ
+	ioctl(sock, TIOCOUTQ, &pending);
 #endif
 
 	return pending;
