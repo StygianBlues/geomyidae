@@ -6,7 +6,9 @@
 
 ## Interfaces
 * git interface
-	* gopher://git.codemadness.org/1/stagit-gopher
+	* gopher://git.codemadness.org/1/git/stagit-gopher
+* atom2gph converter
+	* gopher://git.codemadness.org/1/git/sfeed
 
 
 Please propose any you find!
