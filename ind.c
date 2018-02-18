@@ -57,12 +57,22 @@ filetype type[] = {
 int
 pendingbytes(int sock)
 {
-	int pending;
+	int pending, rval;
 
 	pending = 0;
+	rval = 0;
 #ifdef TIOCOUTQ
-	ioctl(sock, TIOCOUTQ, &pending);
+	rval = ioctl(sock, TIOCOUTQ, &pending);
+#else
+#ifdef SIOCOUTQ
+	rval = ioctl(sock, SIOCOUTQ, &pending);
 #endif
+#endif
+
+	if (rval != 0) {
+		printf("rval = %d\n", rval);
+		return 0;
+	}
 
 	return pending;
 }
@@ -70,8 +80,30 @@ pendingbytes(int sock)
 void
 waitforpendingbytes(int sock)
 {
-	while (pendingbytes(sock) > 0)
-		usleep(10);
+	int npending, opending, tries;
+
+	npending = opending = tries = 0;
+
+	/*
+	 * Wait until there is nothing pending or the connection stalled for
+	 * 30 seconds.
+	 */
+	while ((npending = pendingbytes(sock)) > 0 && tries < 30000000) {
+		if (opending != 0) {
+			if (opending != npending) {
+				tries = 0;
+			} else {
+				if (tries == 0) {
+					tries = 1;
+				} else {
+					tries += tries;
+				}
+			}
+		}
+		opending = npending;
+
+		usleep(tries);
+	}
 }
 
 int
