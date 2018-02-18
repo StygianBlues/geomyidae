@@ -69,10 +69,8 @@ pendingbytes(int sock)
 #endif
 #endif
 
-	if (rval != 0) {
-		printf("rval = %d\n", rval);
+	if (rval != 0)
 		return 0;
-	}
 
 	return pending;
 }
