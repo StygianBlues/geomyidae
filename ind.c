@@ -78,29 +78,32 @@ pendingbytes(int sock)
 void
 waitforpendingbytes(int sock)
 {
-	int npending, opending, tries;
+	int npending, opending, trytime;
 
-	npending = opending = tries = 0;
+	npending = opending = 0;
+	trytime = 10;
 
 	/*
-	 * Wait until there is nothing pending or the connection stalled for
-	 * 30 seconds.
+	 * Wait until there is nothing pending or the connection stalled
+	 * (nothing was sent) for around 40 seconds. Beware, trytime is
+	 * an exponential wait.
 	 */
-	while ((npending = pendingbytes(sock)) > 0 && tries < 30000000) {
+	while ((npending = pendingbytes(sock)) > 0 && trytime < 20000000) {
 		if (opending != 0) {
 			if (opending != npending) {
-				tries = 0;
+				trytime = 10;
 			} else {
-				if (tries == 0) {
-					tries = 1;
-				} else {
-					tries += tries;
-				}
+				/*
+				 * Exponentially increase the usleep
+				 * waiting time to not waste CPU
+				 * resources.
+				 */
+				trytime += trytime;
 			}
 		}
 		opending = npending;
 
-		usleep(tries);
+		usleep(trytime);
 	}
 }
 
