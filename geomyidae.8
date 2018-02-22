@@ -38,6 +38,7 @@ separation.
 .Ed
 .
 .Sh IMPLEMENTATION
+.Bd -filled
 Installation is straightforward: grab the zipped tar file, expand it in
 an appropriate temp directory, change to the
 .Qq "../geomyidae-x.xx"
@@ -152,6 +153,7 @@ IP to which geomyidae binds to (default: 0.0.0.0)
 .El
 .
 .Sh FORMATTING
+.Bd -filled
 Structured Gopher space(s) can be created with geomyidae through the
 use of special indexing files of the form
 .Ic <name>.gph
@@ -300,6 +302,7 @@ Search Veronica II
 Telnet to SDF Public Access Unix System
 .El
 .Sh DYNAMIC CONTENT (gopher CGI)
+.Bd -filled
 There are two options provided for dynamic content creation: standard CGI (
 .Ic .cgi
 ) and dynamic CGI
@@ -313,6 +316,7 @@ All scripts must be under the gopher root directory and be executable by
 the same user:group running geomyidae.  Consequently, it is best to use
 the -u and -g server options to avoid running as root.
 .Pp
+.Bd -filled
 Both .cgi and .dcgi scripts have the same argument call structure (as seen by geomyidae):
 .Pp
 .D1  executable.[d]cgi $search $arguments $host $port
@@ -328,6 +332,7 @@ All terms are tab-separated (per gopher protocol) which can cause some
 surprises depending on how a script is written.  See the CGI file (included
 in the geomyidae source archive) for further elaboration.
 .Pp
+.Bd -filled
 QUIRK: The original gopher client tried to be too intelligent. It is using
 gopher+ when you request some resource. When "search" is just the value "+",
 "!", "$" or empty, geomyidae will display a gopher+ redirect instead of invoking the
