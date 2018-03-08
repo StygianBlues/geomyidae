@@ -91,7 +91,7 @@ logentry(char *host, char *port, char *qry, char *status)
 
         if (glfd >= 0) {
 		tim = time(0);
-		ptr = localtime(&tim);
+		ptr = gmtime(&tim);
 
 		ahost = revlookup ? reverselookup(host) : host;
 		strftime(timstr, sizeof(timstr), "%F %T %z", ptr);
