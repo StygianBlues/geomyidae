@@ -181,7 +181,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 
 	fd = -1;
 	if (stat(path, &dir) != -1 && S_ISDIR(dir.st_mode)) {
-		for (i = 0; i < sizeof(indexf)/sizeof(indexf)[0]; i++) {
+		for (i = 0; i < sizeof(indexf)/sizeof(indexf[0]); i++) {
 			if (strlen(path) + strlen(indexf[i]) >= sizeof(path)) {
 				if (loglvl & ERRORS)
 					logentry(clienth, clientp, recvc,
