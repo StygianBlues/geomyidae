@@ -62,6 +62,9 @@ char *htredir = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		"    This page is for redirecting you to: <a href=\"%s\">%s</a>.\n"
 		"  </body>\n"
 		"</html>\n";
+char *selinval ="3Happy helping ☃ here: "
+		"Sorry, your selector contains '..'. That's illegal here.\tErr"
+	    "\tlocalhost\t70\r\n.\r\n\r\n";
 
 int
 dropprivileges(struct group *gr, struct passwd *pw)
@@ -174,8 +177,11 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 		recvb[0] = '/';
 		recvb[1] = '\0';
 	}
-	if (recvb[0] != '/' || strstr(recvb, ".."))
+
+	if (recvb[0] != '/' || strstr(recvb, "..")){
+		dprintf(sock, selinval);
 		return;
+	}
 
 	snprintf(path, sizeof(path), "%s%s", base, recvb);
 
