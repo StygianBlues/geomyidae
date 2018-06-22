@@ -30,6 +30,11 @@
 #include "ind.h"
 #include "handlr.h"
 
+/*
+ * Be careful, to look at handlerequest(), in case you add any executing
+ * handler, so nocgi will be valuable.
+ */
+
 filetype type[] = {
 	{"default", "9", handlebin},
 	{"gph", "1", handlegph},

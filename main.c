@@ -47,8 +47,11 @@ char *argv0;
 char *stdbase = "/var/gopher";
 char *stdport = "70";
 char *indexf[] = {"/index.gph", "/index.cgi", "/index.dcgi", "/index.bin"};
-char *err = "3Sorry, but the requested token '%s' could not be found.\tErr"
-	    "\tlocalhost\t70\r\n.\r\n\r\n";
+char *nocgierr = "3Sorry, execution of the token '%s' was requested, but this "
+	    "is disabled in the server configuration.\tErr"
+	    "\tlocalhost\t70\r\n";
+char *notfounderr = "3Sorry, but the requested token '%s' could not be found.\tErr"
+	    "\tlocalhost\t70\r\n";
 char *htredir = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n"
 		"	\"DTD/xhtml-transitional.dtd\">\n"
@@ -110,7 +113,7 @@ logentry(char *host, char *port, char *qry, char *status)
 
 void
 handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
-			char *clientp)
+			char *clientp, int nocgi)
 {
 	struct stat dir;
 	char recvc[1025], recvb[1025], path[1025], *args, *sear, *c;
@@ -203,6 +206,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	} else {
 		fd = open(path, O_RDONLY);
 		if (fd < 0) {
+			dprintf(sock, notfounderr, recvc);
 			if (loglvl & ERRORS)
 				logentry(clienth, clientp, recvc, strerror(errno));
 			return;
@@ -218,7 +222,14 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 		if (c == nil)
 			c = path;
 		type = gettype(c);
-		type->f(sock, path, port, base, args, sear, ohost, clienth);
+		if (nocgi && (type->f == handledcgi || type->f == handlecgi)) {
+			dprintf(sock, nocgierr, recvc);
+			if (loglvl & ERRORS)
+				logentry(clienth, clientp, recvc, "nocgi error");
+		} else {
+			type->f(sock, path, port, base, args, sear, ohost,
+				clienth);
+		}
 	} else {
 		if (S_ISDIR(dir.st_mode)) {
 			handledir(sock, path, port, base, args, sear, ohost,
@@ -230,7 +241,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 			return;
 		}
 
-		dprintf(sock, err, recvc);
+		dprintf(sock, notfounderr, recvc);
 		if (loglvl & ERRORS)
 			logentry(clienth, clientp, recvc, "not found");
 	}
@@ -334,7 +345,7 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 void
 usage(void)
 {
-	dprintf(2, "usage: %s [-4] [-6] [-c] [-d] [-n] [-l logfile] "
+	dprintf(2, "usage: %s [-46cden] [-l logfile] "
 	           "[-v loglvl] [-b base] [-p port] [-o sport] "
 	           "[-u user] [-g group] [-h host] [-i IP]\n",
 		   argv0);
@@ -347,7 +358,7 @@ main(int argc, char *argv[])
 	struct addrinfo hints;
 	struct sockaddr_storage clt;
 	socklen_t cltlen;
-	int sock, dofork, v4, v6, usechroot = 0;
+	int sock, dofork, v4, v6, usechroot, nocgi;
 	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV];
 	char *user, *group, *bindip, *ohost, *sport;
 	struct passwd *us;
@@ -365,6 +376,8 @@ main(int argc, char *argv[])
 	sport = port;
 	v4 = 1;
 	v6 = 1;
+	usechroot = 0;
+	nocgi = 0;
 
 	ARGBEGIN {
 	case '4':
@@ -387,6 +400,9 @@ main(int argc, char *argv[])
 		break;
 	case 'd':
 		dofork = 0;
+		break;
+	case 'e':
+		nocgi = 1;
 		break;
 	case 'v':
 		loglvl = atoi(EARGF(usage()));
@@ -560,7 +576,7 @@ main(int argc, char *argv[])
 			signal(SIGALRM, SIG_DFL);
 
 			handlerequest(sock, base, ohost, sport, clienth,
-						clientp);
+						clientp, nocgi);
 
 			waitforpendingbytes(sock);
 
