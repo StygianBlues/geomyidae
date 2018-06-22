@@ -56,7 +56,7 @@ filetype type[] = {
         {"c", "0", handlebin},
         {"sh", "0", handlebin},
         {"patch", "0", handlebin},
-        {nil, nil, nil},
+        {NULL, NULL, NULL},
 };
 
 int
@@ -240,11 +240,11 @@ gettype(char *filename)
 	int i;
 
 	end = strrchr(filename, '.');
-	if (end == nil)
+	if (end == NULL)
 		return &type[0];
 	end++;
 
-	for (i = 0; type[i].end != nil; i++)
+	for (i = 0; type[i].end != NULL; i++)
 		if (!strcasecmp(end, type[i].end))
 			return &type[i];
 
@@ -254,10 +254,10 @@ gettype(char *filename)
 void
 freeelem(Elems *e)
 {
-	if (e != nil) {
-		if (e->e != nil) {
+	if (e != NULL) {
+		if (e->e != NULL) {
 			for (;e->num > 0; e->num--)
-				if (e->e[e->num - 1] != nil)
+				if (e->e[e->num - 1] != NULL)
 					free(e->e[e->num - 1]);
 			free(e->e);
 		}
@@ -269,8 +269,8 @@ freeelem(Elems *e)
 void
 freeindex(Indexs *i)
 {
-	if (i != nil) {
-		if (i->n != nil) {
+	if (i != NULL) {
+		if (i->n != NULL) {
 			for (;i->num > 0; i->num--)
 				freeelem(i->n[i->num - 1]);
 			free(i->n);
@@ -321,7 +321,7 @@ getadv(char *str)
 		o = xstrdup(str);
 		b = o + 1;
 		bo = b;
-		while ((e = strchr(bo, '|')) != nil) {
+		while ((e = strchr(bo, '|')) != NULL) {
 			if (e != bo && e[-1] == '\\') {
 				memmove(&e[-1], e, strlen(e));
 				bo = e;
@@ -335,12 +335,12 @@ getadv(char *str)
 		}
 
 		e = strchr(b, ']');
-		if (e != nil) {
+		if (e != NULL) {
 			*e = '\0';
 			addelem(ret, b);
 		}
 		free(o);
-		if (ret->e != nil && ret->num == 5)
+		if (ret->e != NULL && ret->num == 5)
 			return ret;
 
 		/* Invalid entry: Give back the whole line. */
@@ -381,7 +381,7 @@ scanfile(char *fname)
 	Elems *el;
 
 	if (!(fp = fopen(fname, "r")))
-		return nil;
+		return NULL;
 
 	ret = xcalloc(1, sizeof(Indexs));
 
@@ -389,7 +389,7 @@ scanfile(char *fname)
 		if (ln[n - 1] == '\n')
 			ln[--n] = '\0';
 		el = getadv(ln);
-		if(el == nil)
+		if(el == NULL)
 			continue;
 
 		addindexs(ret, el);
@@ -399,9 +399,9 @@ scanfile(char *fname)
 	free(ln);
 	fclose(fp);
 
-	if (ret->n == nil) {
+	if (ret->n == NULL) {
 		free(ret);
-		return nil;
+		return NULL;
 	}
 
 	return ret;

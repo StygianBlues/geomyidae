@@ -7,7 +7,6 @@
 #define IND_H
 
 #include <stdio.h>
-#define nil NULL
 
 extern int glfd;
 

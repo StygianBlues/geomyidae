@@ -30,7 +30,7 @@ extern char *argv0;
 			USED(argv);\
 			USED(argc);
 
-#define	EARGF(x)	((argv[1] == nil)? ((x), abort(), (char *)0) :\
+#define	EARGF(x)	((argv[1] == NULL)? ((x), abort(), (char *)0) :\
 			(argc--, argv++, argv[0]))
 
 #endif

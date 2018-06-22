@@ -39,7 +39,7 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 
 	par = xstrdup(pa);
 	b = strrchr(par + strlen(base), '/');
-	if (b != nil) {
+	if (b != NULL) {
 		*b = '\0';
 		dprintf(sock, "1..\t%s\t%s\t%s\r\n",
 			par + strlen(base), ohost, port);
@@ -88,11 +88,11 @@ handlegph(int sock, char *file, char *port, char *base, char *args,
 	USED(sear);
 
 	act = scanfile(file);
-	if (act != nil) {
+	if (act != NULL) {
 		for (i = 0; i < act->num && ret >= 0; i++) {
 			ret = printelem(sock, act->n[i], ohost, port);
 			freeelem(act->n[i]);
-			act->n[i] = nil;
+			act->n[i] = NULL;
 		}
 		dprintf(sock, ".\r\n");
 
@@ -131,20 +131,20 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 
 	path = xstrdup(file);
 	p = strrchr(path, '/');
-	if (p != nil)
+	if (p != NULL)
 		p[1] = '\0';
 	else {
 		free(path);
-		path = nil;
+		path = NULL;
 	}
 
 	p = strrchr(file, '/');
-	if (p == nil)
+	if (p == NULL)
 		p = file;
 
-	if (sear == nil)
+	if (sear == NULL)
 		sear = "";
-	if (args == nil)
+	if (args == NULL)
 		args = "";
 
 	dup2(sock, 0);
@@ -152,7 +152,7 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 	dup2(sock, 2);
 	switch (fork()) {
 	case 0:
-		if (path != nil) {
+		if (path != NULL) {
 			if (chdir(path) < 0)
 				break;
 		}
@@ -160,7 +160,7 @@ handlecgi(int sock, char *file, char *port, char *base, char *args,
 		setcgienviron(p, file, port, base, args, sear, ohost, chost);
 
 		if (execl(file, p, sear, args, ohost, port,
-				(char *)nil) == -1) {
+				(char *)NULL) == -1) {
 			perror("execl");
 			_exit(1);
 		}
@@ -179,7 +179,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 		char *sear, char *ohost, char *chost)
 {
 	FILE *fp;
-	char *p, *path, *ln = nil;
+	char *p, *path, *ln = NULL;
 	size_t linesiz = 0;
 	ssize_t n;
 	int outpipe[2], ret = 0;
@@ -192,20 +192,20 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 
 	path = xstrdup(file);
 	p = strrchr(path, '/');
-	if (p != nil)
+	if (p != NULL)
 		p[1] = '\0';
 	else {
 		free(path);
-		path = nil;
+		path = NULL;
 	}
 
 	p = strrchr(file, '/');
-	if (p == nil)
+	if (p == NULL)
 		p = file;
 
-	if (sear == nil)
+	if (sear == NULL)
 		sear = "";
-	if (args == nil)
+	if (args == NULL)
 		args = "";
 
 	dup2(sock, 0);
@@ -214,7 +214,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 	case 0:
 		dup2(outpipe[1], 1);
 		close(outpipe[0]);
-		if (path != nil) {
+		if (path != NULL) {
 			if (chdir(path) < 0)
 				break;
 		}
@@ -222,7 +222,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 		setcgienviron(p, file, port, base, args, sear, ohost, chost);
 
 		if (execl(file, p, sear, args, ohost, port,
-				(char *)nil) == -1) {
+				(char *)NULL) == -1) {
 			perror("execl");
 			_exit(1);
 		}
@@ -243,7 +243,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 				ln[--n] = '\0';
 
 			el = getadv(ln);
-			if (el == nil)
+			if (el == NULL)
 				continue;
 
 			ret = printelem(sock, el, ohost, port);

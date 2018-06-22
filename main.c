@@ -41,7 +41,7 @@ int glfd = -1;
 int loglvl = 15;
 int listfd = -1;
 int revlookup = 1;
-char *logfile = nil;
+char *logfile = NULL;
 
 char *argv0;
 char *stdbase = "/var/gopher";
@@ -72,11 +72,11 @@ char *selinval ="3Happy helping ☃ here: "
 int
 dropprivileges(struct group *gr, struct passwd *pw)
 {
-	if (gr != nil)
+	if (gr != NULL)
 		if (setgroups(1, &gr->gr_gid) != 0 || setgid(gr->gr_gid) != 0)
 			return -1;
-	if (pw != nil) {
-		if (gr == nil) {
+	if (pw != NULL) {
+		if (gr == NULL) {
 			if (setgroups(1, &pw->pw_gid) != 0 ||
 			    setgid(pw->pw_gid) != 0)
 				return -1;
@@ -123,7 +123,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	memset(&dir, 0, sizeof(dir));
 	memset(recvb, 0, sizeof(recvb));
 	memset(recvc, 0, sizeof(recvc));
-	args = nil;
+	args = NULL;
 
 	len = recv(sock, recvb, sizeof(recvb)-1, 0);
 	if (len <= 0) {
@@ -139,7 +139,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	if (c)
 		c[0] = '\0';
 	sear = strchr(recvb, '\t');
-	if (sear != nil) {
+	if (sear != NULL) {
 		*sear++ = '\0';
 
 		/*
@@ -173,7 +173,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	}
 
 	args = strchr(recvb, '?');
-	if (args != nil)
+	if (args != NULL)
 		*args++ = '\0';
 
 	if (recvb[0] == '\0') {
@@ -219,7 +219,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 			logentry(clienth, clientp, recvc, "serving");
 
 		c = strrchr(path, '/');
-		if (c == nil)
+		if (c == NULL)
 			c = path;
 		type = gettype(c);
 		if (nocgi && (type->f == handledcgi || type->f == handlecgi)) {
@@ -262,7 +262,7 @@ sighandler(int sig)
 	case SIGABRT:
 	case SIGTERM:
 	case SIGKILL:
-		if (logfile != nil && glfd != -1) {
+		if (logfile != NULL && glfd != -1) {
 			close(glfd);
 			glfd = -1;
 		}
@@ -303,11 +303,11 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 
 	if (getaddrinfo(bindip, port, hints, &ai))
 		return -1;
-	if (ai == nil)
+	if (ai == NULL)
 		return -1;
 
 	on = 1;
-	for (rp = ai; rp != nil; rp = rp->ai_next) {
+	for (rp = ai; rp != NULL; rp = rp->ai_next) {
 		listfd = socket(rp->ai_family, rp->ai_socktype,
 				rp->ai_protocol);
 		if (listfd < 0)
@@ -335,7 +335,7 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 			logentry(addstr, port, "-", "could not bind");
 		}
 	}
-	if (rp == nil)
+	if (rp == NULL)
 		return -1;
 	freeaddrinfo(ai);
 
@@ -367,12 +367,12 @@ main(int argc, char *argv[])
 	base = stdbase;
 	port = stdport;
 	dofork = 1;
-	user = nil;
-	group = nil;
-	us = nil;
-	gr = nil;
-	bindip = nil;
-	ohost = nil;
+	user = NULL;
+	group = NULL;
+	us = NULL;
+	gr = NULL;
+	bindip = NULL;
+	ohost = NULL;
 	sport = port;
 	v4 = 1;
 	v6 = 1;
@@ -432,7 +432,7 @@ main(int argc, char *argv[])
 	if (argc != 0)
 		usage();
 
-	if (ohost == nil) {
+	if (ohost == NULL) {
 		ohost = xcalloc(1, 513);
 		if (gethostname(ohost, 512) < 0) {
 			perror("gethostname");
@@ -443,15 +443,15 @@ main(int argc, char *argv[])
 		ohost = xstrdup(ohost);
 	}
 
-	if (group != nil) {
-		if ((gr = getgrnam(group)) == nil) {
+	if (group != NULL) {
+		if ((gr = getgrnam(group)) == NULL) {
 			perror("no such group");
 			return 1;
 		}
 	}
 
-	if (user != nil) {
-		if ((us = getpwnam(user)) == nil) {
+	if (user != NULL) {
+		if ((us = getpwnam(user)) == NULL) {
 			perror("no such user");
 			return 1;
 		}
@@ -469,7 +469,7 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (logfile != nil) {
+	if (logfile != NULL) {
 		glfd = open(logfile, O_APPEND | O_WRONLY | O_CREAT, 0644);
 		if (glfd < 0) {
 			perror("log");
@@ -595,7 +595,7 @@ main(int argc, char *argv[])
 
 	shutdown(listfd, SHUT_RDWR);
 	close(listfd);
-	if (logfile != nil && glfd != -1) {
+	if (logfile != NULL && glfd != -1) {
 		close(glfd);
 		glfd = -1;
 	}
