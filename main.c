@@ -537,6 +537,15 @@ main(int argc, char *argv[])
 	initsignals();
 
 	cltlen = sizeof(clt);
+
+#ifdef __OpenBSD__
+	char promises[30];
+	snprintf(promises, sizeof(promises), "rpath inet stdio proc exec %s %s",
+		revlookup ? "dns"  : "",
+		dofork    ? "tty"  : "");
+	pledge(promises, NULL);
+#endif /* __OpenBSD__ */
+
 	while (1) {
 		sock = accept(listfd, (struct sockaddr *)&clt, &cltlen);
 		if (sock < 0) {
@@ -574,6 +583,14 @@ main(int argc, char *argv[])
 			signal(SIGINT, SIG_DFL);
 			signal(SIGTERM, SIG_DFL);
 			signal(SIGALRM, SIG_DFL);
+
+#ifdef __OpenBSD__
+			char client_promises[25];
+			snprintf(client_promises, sizeof(client_promises), 
+					"rpath inet stdio %s", 
+					nocgi ? "" : "proc exec" );
+			pledge(client_promises, NULL);
+#endif /* __OpenBSD__ */
 
 			handlerequest(sock, base, ohost, sport, clienth,
 						clientp, nocgi);

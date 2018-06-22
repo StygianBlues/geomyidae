@@ -66,7 +66,7 @@ pendingbytes(int sock)
 
 	pending = 0;
 	rval = 0;
-#ifdef TIOCOUTQ
+#if defined(TIOCOUTQ) && !defined(__OpenBSD__)
 	rval = ioctl(sock, TIOCOUTQ, &pending);
 #else
 #ifdef SIOCOUTQ
