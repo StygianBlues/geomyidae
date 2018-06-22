@@ -9,7 +9,7 @@
 /*
  * Handler API definition
  *
- * path .... path to the script relative from base
+ * path .... absolute path to the script
  * port .... port which the script should use when defining menu items
  *	     (See -o and -p in geomyidae(8))
  * base .... base path of geomyidae ("" in case of chroot)
