@@ -586,8 +586,8 @@ main(int argc, char *argv[])
 
 #ifdef __OpenBSD__
 			char client_promises[25];
-			snprintf(client_promises, sizeof(client_promises), 
-					"rpath inet stdio %s", 
+			snprintf(client_promises, sizeof(client_promises),
+					"rpath inet stdio %s",
 					nocgi ? "" : "proc exec" );
 			pledge(client_promises, NULL);
 #endif /* __OpenBSD__ */
