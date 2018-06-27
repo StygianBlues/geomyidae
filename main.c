@@ -539,10 +539,9 @@ main(int argc, char *argv[])
 	cltlen = sizeof(clt);
 
 #ifdef __OpenBSD__
-	char *promises = (char[35]){};
-	snprintf(promises, 35, "rpath inet stdio proc exec %s %s",
-		revlookup ? "dns"  : "",
-		dofork    ? "tty"  : "");
+	char *promises = (char[30]){};
+	snprintf(promises, 30, "rpath inet stdio proc exec %s",
+	         revlookup ? "dns" : "");
 	if (pledge(promises, NULL) == -1) {
 		perror("pledge");
 		exit(1);
