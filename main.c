@@ -539,8 +539,8 @@ main(int argc, char *argv[])
 	cltlen = sizeof(clt);
 
 #ifdef __OpenBSD__
-	char *promises = (char[30]){};
-	snprintf(promises, 30, "rpath inet stdio proc exec %s",
+	char promises[31]; /* check the size needed in the fork too */
+	snprintf(promises, sizeof(promises), "rpath inet stdio proc exec %s",
 	         revlookup ? "dns" : "");
 	if (pledge(promises, NULL) == -1) {
 		perror("pledge");
@@ -587,8 +587,10 @@ main(int argc, char *argv[])
 			signal(SIGALRM, SIG_DFL);
 
 #ifdef __OpenBSD__
-			promises = nocgi ? "rpath inet stdio" :
-			                   "rpath inet stdio proc exec";
+			snprintf(promises, sizeof(promises),
+			         "rpath inet stdio %s %s",
+			         nocgi     ? ""    : "proc exec",
+			         revlookup ? "dns" : "");
 			if (pledge(promises, NULL) == -1) {
 				perror("pledge");
 				exit(1);
