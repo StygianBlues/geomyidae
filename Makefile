@@ -5,7 +5,7 @@
 NAME = geomyidae
 VERSION = 0.32.1
 
-PREFIX = /usr
+PREFIX = /usr/local
 BINDIR = ${PREFIX}/bin
 MANDIR = ${PREFIX}/share/man/man8
 
