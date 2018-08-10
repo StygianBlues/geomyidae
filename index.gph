@@ -6,3 +6,4 @@ tcomment
 [0|some \| escape and [ special characters ] test|error|server|port]
 some	invalid line
 
+

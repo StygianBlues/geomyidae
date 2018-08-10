@@ -9,6 +9,9 @@
 	* gopher://git.codemadness.org/1/git/stagit-gopher
 * atom2gph converter
 	* gopher://git.codemadness.org/1/git/sfeed
+* A collection of gopher interfaces (rss feeds, instagram, nntp,
+  reddit, twitter, youtube) by leot
+	* https://bitbucket.org/iamleot/gophercgis
 
 
 Please propose any you find!
