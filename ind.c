@@ -471,7 +471,10 @@ void
 setcgienviron(char *file, char *path, char *port, char *base, char *args,
 		char *sear, char *ohost, char *chost)
 {
-
+	/*
+	 * TODO: Clean environment from possible unsafe environment variables.
+	 *       But then it is the responsibility of the script writer.
+	 */
 	unsetenv("AUTH_TYPE");
 	unsetenv("CONTENT_LENGTH");
 	unsetenv("CONTENT_TYPE");
