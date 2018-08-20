@@ -66,8 +66,8 @@ char *htredir = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		"  </body>\n"
 		"</html>\n";
 char *selinval ="3Happy helping ☃ here: "
-		"Sorry, your selector contains '..'. That's illegal here.\tErr"
-	    "\tlocalhost\t70\r\n.\r\n\r\n";
+		"Sorry, your selector does not start with / or contains '..'. "
+		"That's illegal here.\tErr\tlocalhost\t70\r\n.\r\n\r\n";
 
 int
 dropprivileges(struct group *gr, struct passwd *pw)
