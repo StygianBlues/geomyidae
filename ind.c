@@ -174,17 +174,15 @@ xsendfile(int fd, int sock)
 	}
 
 /* Different sendfile(2) implementations on different platforms. :/ */
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__)
-	for (sent = 0; count > 0; count -= sent) {
 #ifdef __linux__
+	for (sent = 0; count > 0; count -= sent) {
 		sent = sendfile(sock, fd, 0, count);
-#endif
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-		sent = sendfile(fd, sock, 0, count, NULL, NULL, 0);
-#endif
 		if (sent < 0)
 			return -1;
 	}
+#endif
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+	return sendfile(fd, sock, 0, count, NULL, NULL, 0);
 #endif
 
 	return 0;
