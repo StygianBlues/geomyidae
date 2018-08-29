@@ -558,9 +558,11 @@ main(int argc, char *argv[])
 			}
 		}
 
-		getnameinfo((struct sockaddr *)&clt, cltlen, clienth,
+		if (getnameinfo((struct sockaddr *)&clt, cltlen, clienth,
 				sizeof(clienth), clientp, sizeof(clientp),
-				NI_NUMERICHOST|NI_NUMERICSERV);
+				NI_NUMERICHOST|NI_NUMERICSERV)) {
+			clienth[0] = clientp[0] = '\0';
+		}
 
 		if (!strncmp(clienth, "::ffff:", 7))
 			memmove(clienth, clienth+7, strlen(clienth)-6);
