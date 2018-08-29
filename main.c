@@ -311,6 +311,7 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 		if (setsockopt(listfd, SOL_SOCKET, SO_REUSEADDR, &on,
 					sizeof(on)) < 0) {
 			close(listfd);
+			listfd = -1;
 			break;
 		}
 
