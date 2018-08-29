@@ -256,7 +256,6 @@ sighandler(int sig)
 	case SIGCHLD:
 		while (waitpid(-1, NULL, WNOHANG) > 0);
 		break;
-	case SIGHUP:
 	case SIGINT:
 	case SIGQUIT:
 	case SIGABRT:
