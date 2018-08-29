@@ -298,13 +298,10 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 	void *sinaddr;
 	int on, listfd;
 
+	if (getaddrinfo(bindip, port, hints, &ai) || ai == NULL)
+		return -1;
+
 	listfd = -1;
-
-	if (getaddrinfo(bindip, port, hints, &ai))
-		return -1;
-	if (ai == NULL)
-		return -1;
-
 	on = 1;
 	for (rp = ai; rp != NULL; rp = rp->ai_next) {
 		listfd = socket(rp->ai_family, rp->ai_socktype,
