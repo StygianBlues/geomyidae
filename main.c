@@ -331,9 +331,9 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 			logentry(addstr, port, "-", "could not bind");
 		}
 	}
+	freeaddrinfo(ai);
 	if (rp == NULL)
 		return -1;
-	freeaddrinfo(ai);
 
 	return listfd;
 }
