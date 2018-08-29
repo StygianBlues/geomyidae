@@ -533,8 +533,6 @@ main(int argc, char *argv[])
 
 	initsignals();
 
-	cltlen = sizeof(clt);
-
 #ifdef __OpenBSD__
 	char promises[31]; /* check the size needed in the fork too */
 	snprintf(promises, sizeof(promises), "rpath inet stdio proc exec %s",
@@ -546,6 +544,7 @@ main(int argc, char *argv[])
 #endif /* __OpenBSD__ */
 
 	while (1) {
+		cltlen = sizeof(clt);
 		sock = accept(listfd, (struct sockaddr *)&clt, &cltlen);
 		if (sock < 0) {
 			switch (errno) {
