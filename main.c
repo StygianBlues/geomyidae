@@ -376,7 +376,7 @@ main(int argc, char *argv[])
 	gr = NULL;
 	bindip = NULL;
 	ohost = NULL;
-	sport = port;
+	sport = NULL;
 	v4 = 1;
 	v6 = 1;
 	usechroot = 0;
@@ -397,6 +397,8 @@ main(int argc, char *argv[])
 		break;
 	case 'p':
 		port = EARGF(usage());
+		if (sport == NULL)
+			sport = port;
 		break;
 	case 'l':
 		logfile = EARGF(usage());
