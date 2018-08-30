@@ -290,14 +290,9 @@ freeindex(Indexs *i)
 void
 addelem(Elems *e, char *s)
 {
-	int slen;
-
-	slen = strlen(s) + 1;
-
 	e->num++;
 	e->e = xrealloc(e->e, sizeof(char *) * e->num);
-	e->e[e->num - 1] = xmalloc(slen);
-	strcpy(e->e[e->num - 1], s);
+	e->e[e->num - 1] = xstrdup(s);
 
 	return;
 }
