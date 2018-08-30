@@ -296,8 +296,8 @@ addelem(Elems *e, char *s)
 
 	e->num++;
 	e->e = xrealloc(e->e, sizeof(char *) * e->num);
-	e->e[e->num - 1] = xcalloc(1, slen);
-	strncpy(e->e[e->num - 1], s, slen - 1);
+	e->e[e->num - 1] = xmalloc(slen);
+	strcpy(e->e[e->num - 1], s);
 
 	return;
 }
