@@ -83,14 +83,13 @@ handlegph(int sock, char *file, char *port, char *base, char *args,
 	Indexs *act;
 	int i, ret = 0;
 
-	USED(base);
 	USED(args);
 	USED(sear);
 
 	act = scanfile(file);
 	if (act != NULL) {
 		for (i = 0; i < act->num && ret >= 0; i++) {
-			ret = printelem(sock, act->n[i], ohost, port);
+			ret = printelem(sock, act->n[i], file, base, ohost, port);
 			freeelem(act->n[i]);
 			act->n[i] = NULL;
 		}
@@ -185,8 +184,6 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 	int outpipe[2], ret = 0;
 	Elems *el;
 
-	USED(base);
-
 	if (pipe(outpipe) < 0)
 		return;
 
@@ -246,7 +243,7 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 			if (el == NULL)
 				continue;
 
-			ret = printelem(sock, el, ohost, port);
+			ret = printelem(sock, el, file, base, ohost, port);
 			freeelem(el);
 		}
 		if (ferror(fp))
