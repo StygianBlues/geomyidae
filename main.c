@@ -290,16 +290,22 @@ initsignals(void)
 	signal(SIGPIPE, SIG_IGN);
 }
 
+/*
+ * TODO: Move Linux and BSD to Plan 9 socket and bind handling, so we do not
+ *       need the inconsistent return and exit on getaddrinfo.
+ */
 int
 getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 {
 	char addstr[INET6_ADDRSTRLEN];
 	struct addrinfo *ai, *rp;
 	void *sinaddr;
-	int on, listfd;
+	int on, listfd, aierr;
 
-	if (getaddrinfo(bindip, port, hints, &ai) || ai == NULL)
-		return -1;
+	if ((aierr = getaddrinfo(bindip, port, hints, &ai)) || ai == NULL) {
+		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(aierr));
+		exit(1);
+	}
 
 	listfd = -1;
 	on = 1;
