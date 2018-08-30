@@ -361,7 +361,7 @@ main(int argc, char *argv[])
 	struct addrinfo hints;
 	struct sockaddr_storage clt;
 	socklen_t cltlen;
-	int sock, dofork, v4, v6, usechroot, nocgi;
+	int sock, dofork, inetf, usechroot, nocgi;
 	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV];
 	char *user, *group, *bindip, *ohost, *sport;
 	struct passwd *us;
@@ -377,17 +377,16 @@ main(int argc, char *argv[])
 	bindip = NULL;
 	ohost = NULL;
 	sport = NULL;
-	v4 = 1;
-	v6 = 1;
+	inetf = AF_INET6;
 	usechroot = 0;
 	nocgi = 0;
 
 	ARGBEGIN {
 	case '4':
-		v6 = 0;
+		inetf = AF_INET;
 		break;
 	case '6':
-		v4 = 0;
+		inetf = AF_INET6;
 		break;
 	case 'b':
 		base = EARGF(usage());
@@ -485,31 +484,22 @@ main(int argc, char *argv[])
 	}
 
 	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = inetf;
 	hints.ai_flags = AI_PASSIVE;
 	hints.ai_socktype = SOCK_STREAM;
 	if (bindip)
 		hints.ai_flags |= AI_CANONNAME;
 
-	listfd = -1;
-	if (v6) {
-		hints.ai_family = PF_INET6;
-		listfd = getlistenfd(&hints, bindip, port);
-		if (!v4 && listfd < 0) {
-			perror("getlistenfd6");
-			return 1;
-		}
-	}
-	if (v4 && listfd < 0) {
-		hints.ai_family = PF_INET;
-		listfd = getlistenfd(&hints, bindip, port);
-		if (listfd < 0) {
-			perror("getlistenfd4");
-			return 1;
+	if ((listfd = getlistenfd(&hints, bindip, port)) < 0) {
+		if (inetf == AF_UNSPEC) {
+			hints.ai_family = AF_INET;
+			listfd = getlistenfd(&hints, bindip, port);
 		}
 	}
 	if (listfd < 0) {
-		fprintf(stderr, "Unable to got a binding socket. "
+		fprintf(stderr, "Unable to get a binding socket. "
 				"Look at bindip and the tcp port.\n");
+		perror("getlistenfd");
 		return 1;
 	}
 
