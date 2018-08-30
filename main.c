@@ -506,7 +506,8 @@ main(int argc, char *argv[])
 		}
 	}
 	if (listfd < 0) {
-		perror("You did not specify a TCP port.");
+		fprintf(stderr, "Unable to got a binding socket. "
+				"Look at bindip and the tcp port.\n");
 		return 1;
 	}
 
