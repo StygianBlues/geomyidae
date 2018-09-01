@@ -444,6 +444,9 @@ main(int argc, char *argv[])
 		usage();
 	} ARGEND;
 
+	if (sport == NULL)
+		sport = port;
+
 	if (argc != 0)
 		usage();
 
