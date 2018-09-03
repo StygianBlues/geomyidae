@@ -422,7 +422,20 @@ printelem(int fd, Elems *el, char *file, char *base, char *addr, char *port)
 		free(el->e[4]);
 		el->e[4] = xstrdup(port);
 	}
-	if (el->e[2][0] != '/' && !strncmp(el->e[2], "URL:", 4)) {
+
+	/*
+	 * Ignore if the path is from base, if it might be some h type with
+	 * some URL and ignore various types that have different semantics but
+	 * to point to some file or directory.
+	 */
+	if (el->e[2][0] != '/'
+			&& strncmp(el->e[2], "URL:", 4)
+			&& el->e[0][0] != 'i'
+			&& el->e[0][0] != '2'
+			&& el->e[0][0] != '3'
+			&& el->e[0][0] != '8'
+			&& el->e[0][0] != 'w'
+			&& el->e[0][0] != 'T') {
 		path = file + strlen(base);
 		if ((p = strrchr(path, '/')))
 			len = p - path;
