@@ -48,6 +48,7 @@ directory, tweak the Makefile if desired (installs in
 by default), then run the
 .Sq "make ; make install"
 commands.  The resulting executable should be run by root.
+.Ed
 .
 .Ss Basic Installation and Startup:
 .Bd -literal
@@ -172,6 +173,7 @@ multiple index files to create a layered gopher environment without the
 use of sub-directories: ie. pictures.gph, music.gph, documents.gph could
 be "directories" within main.gph, yet all reside in /var/gopher along with
 their respective files (*.jpg, *.mp3, *.pdf for example).
+.Ed
 .
 .Ss Anatomy of an index.gph file
 In general, each line of an index.gph file has the following structure:
@@ -322,7 +324,6 @@ All scripts must be under the gopher root directory and be executable by
 the same user:group running geomyidae.  Consequently, it is best to use
 the -u and -g server options to avoid running as root.
 .Pp
-.Bd -filled
 Both .cgi and .dcgi scripts have the same argument call structure (as seen by geomyidae):
 .Pp
 .D1  executable.[d]cgi $search $arguments $host $port
@@ -338,7 +339,6 @@ All terms are tab-separated (per gopher protocol) which can cause some
 surprises depending on how a script is written.  See the CGI file (included
 in the geomyidae source archive) for further elaboration.
 .Pp
-.Bd -filled
 QUIRK: The original gopher client tried to be too intelligent. It is using
 gopher+ when you request some resource. When "search" is just the value "+",
 "!", "$" or empty, geomyidae will display a gopher+ redirect instead of invoking the
@@ -362,6 +362,7 @@ Additionally to the above arguments several environment variables are set.
 .Dl SERVER_SOFTWARE = `geomyidae'
 .Dl X_GOPHER_SEARCH = search (See above.)
 .Pp
+.Ed
 .
 .Ss Some CGI Examples
 Note: these are a very simple examples with no fitness checks with respect
