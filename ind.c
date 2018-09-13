@@ -449,8 +449,7 @@ printelem(int fd, Elems *el, char *file, char *base, char *addr, char *port)
 			free(el->e[2]);
 			el->e[2] = xstrdup(p[0]? p : "/");
 		}
-		if (path != NULL)
-			free(path);
+		free(path);
 	}
 
 	if (dprintf(fd, "%.1s%s\t%s\t%s\t%s\r\n", el->e[0], el->e[1], el->e[2],
