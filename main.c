@@ -44,7 +44,7 @@ int revlookup = 1;
 char *logfile = NULL;
 
 char *argv0;
-char *stdbase = "/var/gopher";
+char stdbase[] = "/var/gopher";
 char *stdport = "70";
 char *indexf[] = {"/index.gph", "/index.cgi", "/index.dcgi", "/index.bin"};
 char *nocgierr = "3Sorry, execution of the token '%s' was requested, but this "
@@ -374,7 +374,7 @@ main(int argc, char *argv[])
 	socklen_t cltlen;
 	int sock, dofork, inetf, usechroot, nocgi;
 	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV];
-	char *user, *group, *bindip, *ohost, *sport;
+	char *user, *group, *bindip, *ohost, *sport, *p;
 	struct passwd *us;
 	struct group *gr;
 
@@ -537,6 +537,10 @@ main(int argc, char *argv[])
 		perror("realpath");
 		return 1;
 	}
+
+	/* strip / at the end, except if it is "/" */
+	for (p = base + strlen(base); p > base + 1 && p[-1] == '/'; --p)
+		p[-1] = '\0';
 
 	if (dropprivileges(gr, us) < 0) {
 		perror("dropprivileges");
