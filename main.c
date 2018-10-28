@@ -300,7 +300,7 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 	char addstr[INET6_ADDRSTRLEN];
 	struct addrinfo *ai, *rp;
 	void *sinaddr;
-	int on, reqaf, listfd, aierr;
+	int on, reqaf, listfd, aierr, errno_save;
 
 	if ((reqaf = hints->ai_family) == AF_UNSPEC)
 		hints->ai_family = AF_INET6;
@@ -343,11 +343,15 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 			}
 			break;
 		}
+
+		/* Save errno, because fprintf in logentry overwrites it. */
+		errno_save = errno;
 		close(listfd);
 		if (loglvl & CONN && inet_ntop(rp->ai_family, sinaddr,
 		    addstr, sizeof(addstr))) {
 			logentry(addstr, port, "-", "could not bind");
 		}
+		errno = errno_save;
 	}
 	freeaddrinfo(ai);
 	if (rp == NULL)
@@ -372,7 +376,7 @@ main(int argc, char *argv[])
 	struct addrinfo hints;
 	struct sockaddr_storage clt;
 	socklen_t cltlen;
-	int sock, dofork, inetf, usechroot, nocgi;
+	int sock, dofork, inetf, usechroot, nocgi, errno_save;
 	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV];
 	char *user, *group, *bindip, *ohost, *sport, *p;
 	struct passwd *us;
@@ -462,15 +466,25 @@ main(int argc, char *argv[])
 	}
 
 	if (group != NULL) {
+		errno = 0;
 		if ((gr = getgrnam(group)) == NULL) {
-			perror("no such group");
+			if (errno == 0) {
+				perror("no such group");
+			} else {
+				perror("getgrnam");
+			}
 			return 1;
 		}
 	}
 
 	if (user != NULL) {
+		errno = 0;
 		if ((us = getpwnam(user)) == NULL) {
-			perror("no such user");
+			if (errno == 0) {
+				perror("no such user");
+			} else {
+				perror("getpwnam");
+			}
 			return 1;
 		}
 	}
@@ -509,10 +523,13 @@ main(int argc, char *argv[])
 			hints.ai_family = AF_INET;
 			listfd = getlistenfd(&hints, bindip, port);
 		}
+		/* Save errno because of fprintf to stderr. */
+		errno_save = errno;
 	}
 	if (listfd < 0) {
 		fprintf(stderr, "Unable to get a binding socket. "
 				"Look at bindip and the tcp port.\n");
+		errno = errno_save;
 		perror("getlistenfd");
 		return 1;
 	}
