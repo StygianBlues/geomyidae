@@ -469,7 +469,7 @@ main(int argc, char *argv[])
 		errno = 0;
 		if ((gr = getgrnam(group)) == NULL) {
 			if (errno == 0) {
-				perror("no such group");
+				fprintf(stderr, "no such group '%s'\n", group);
 			} else {
 				perror("getgrnam");
 			}
@@ -481,7 +481,7 @@ main(int argc, char *argv[])
 		errno = 0;
 		if ((us = getpwnam(user)) == NULL) {
 			if (errno == 0) {
-				perror("no such user");
+				fprintf(stderr, "no such user '%s'\n", user);
 			} else {
 				perror("getpwnam");
 			}
