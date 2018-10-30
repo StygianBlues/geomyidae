@@ -23,6 +23,7 @@
 #include <grp.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <limits.h>
 
 #include "ind.h"
 #include "handlr.h"
@@ -455,8 +456,8 @@ main(int argc, char *argv[])
 		usage();
 
 	if (ohost == NULL) {
-		ohost = xcalloc(1, 513);
-		if (gethostname(ohost, 512) < 0) {
+		ohost = xcalloc(1, HOST_NAME_MAX+1);
+		if (gethostname(ohost, HOST_NAME_MAX) < 0) {
 			perror("gethostname");
 			free(ohost);
 			return 1;
