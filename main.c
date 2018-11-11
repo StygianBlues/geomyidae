@@ -24,6 +24,8 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include <limits.h>
+#include <sys/select.h>
+#include <sys/time.h>
 
 #include "ind.h"
 #include "handlr.h"
@@ -40,7 +42,8 @@ enum {
 
 int glfd = -1;
 int loglvl = 15;
-int listfd = -1;
+int *listfds = NULL;
+int nlistfds = 0;
 int revlookup = 1;
 char *logfile = NULL;
 
@@ -253,6 +256,8 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 void
 sighandler(int sig)
 {
+	int i;
+
 	switch (sig) {
 	case SIGCHLD:
 		while (waitpid(-1, NULL, WNOHANG) > 0);
@@ -266,9 +271,13 @@ sighandler(int sig)
 			close(glfd);
 			glfd = -1;
 		}
-		if (listfd >= 0) {
-			shutdown(listfd, SHUT_RDWR);
-			close(listfd);
+		if (listfds != NULL) {
+			for (i = 0; i < nlistfds; i++) {
+				if (listfds[i] >= 0) {
+					shutdown(listfds[i], SHUT_RDWR);
+					close(listfds[i]);
+				}
+			}
 		}
 		exit(0);
 		break;
@@ -295,60 +304,89 @@ initsignals(void)
  * TODO: Move Linux and BSD to Plan 9 socket and bind handling, so we do not
  *       need the inconsistent return and exit on getaddrinfo.
  */
-int
-getlistenfd(struct addrinfo *hints, char *bindip, char *port)
+int *
+getlistenfd(struct addrinfo *hints, char *bindip, char *port, int *rlfdnum)
 {
 	char addstr[INET6_ADDRSTRLEN];
 	struct addrinfo *ai, *rp;
 	void *sinaddr;
-	int on, listenfd, aierr, errno_save;
+	int on, *listenfds, *listenfd, aierr, errno_save;
 
 	if ((aierr = getaddrinfo(bindip, port, hints, &ai)) || ai == NULL) {
 		fprintf(stderr, "getaddrinfo (%s:%s): %s\n", bindip, port,
-				gai_strerror(aierr));
+			gai_strerror(aierr));
 		exit(1);
 	}
 
-	listenfd = -1;
+	*rlfdnum = 0;
+	listenfds = NULL;
 	on = 1;
 	for (rp = ai; rp != NULL; rp = rp->ai_next) {
-		listenfd = socket(rp->ai_family, rp->ai_socktype,
+		printf("getaddrinfo result: %s:%d\n", rp->ai_canonname,
 				rp->ai_protocol);
-		if (listenfd < 0)
+		listenfds = xrealloc(listenfds,
+				sizeof(*listenfds) * (++*rlfdnum));
+		listenfd = &listenfds[*rlfdnum-1];
+
+		*listenfd = socket(rp->ai_family, rp->ai_socktype,
+				rp->ai_protocol);
+		printf("*listenfd = %d\n", *listenfd);
+		if (*listenfd < 0)
 			continue;
-		if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on,
-					sizeof(on)) < 0) {
-			close(listenfd);
-			listenfd = -1;
-			break;
+		if (setsockopt(*listenfd, SOL_SOCKET, SO_REUSEADDR, &on,
+				sizeof(on)) < 0) {
+			printf("setsockopt failed\n");
+			close(*listenfd);
+			(*rlfdnum)--;
+			continue;
+		}
+
+		if (rp->ai_family == AF_INET6 && (setsockopt(*listenfd,
+				IPPROTO_IPV6, IPV6_V6ONLY, &on,
+				sizeof(on)) < 0)) {
+			printf("ipv6 only failed\n");
+			close(*listenfd);
+			(*rlfdnum)--;
+			continue;
 		}
 
 		sinaddr = (rp->ai_family == AF_INET) ?
 		          (void *)&((struct sockaddr_in *)rp->ai_addr)->sin_addr :
 		          (void *)&((struct sockaddr_in6 *)rp->ai_addr)->sin6_addr;
 
-		if (bind(listenfd, rp->ai_addr, rp->ai_addrlen) == 0) {
+		if (bind(*listenfd, rp->ai_addr, rp->ai_addrlen) == 0) {
 			if (loglvl & CONN && inet_ntop(rp->ai_family, sinaddr,
-			    addstr, sizeof(addstr))) {
+					addstr, sizeof(addstr))) {
+				/* Do not revlookup here. */
+				on = revlookup;
+				revlookup = 0;
 				logentry(addstr, port, "-", "listening");
+				revlookup = on;
 			}
-			break;
+			continue;
 		}
 
 		/* Save errno, because fprintf in logentry overwrites it. */
 		errno_save = errno;
-		close(listenfd);
+		close(*listenfd);
+		(*rlfdnum)--;
 		if (loglvl & CONN && inet_ntop(rp->ai_family, sinaddr,
-		    addstr, sizeof(addstr))) {
+				addstr, sizeof(addstr))) {
+			/* Do not revlookup here. */
+			on = revlookup;
+			revlookup = 0;
 			logentry(addstr, port, "-", "could not bind");
+			revlookup = on;
 		}
 		errno = errno_save;
 	}
 	freeaddrinfo(ai);
-	if (rp == NULL)
-		return -1;
+	if (*rlfdnum < 1) {
+		free(listenfds);
+		return NULL;
+	}
 
-	return listenfd;
+	return listenfds;
 }
 
 void
@@ -367,11 +405,13 @@ main(int argc, char *argv[])
 	struct addrinfo hints;
 	struct sockaddr_storage clt;
 	socklen_t cltlen;
-	int sock, dofork, inetf, usechroot, nocgi, errno_save;
+	int sock, dofork, inetf, usechroot, nocgi, errno_save, nbindips, i, j,
+	    nlfdret, *lfdret, listfd, maxlfd;
 	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV];
-	char *user, *group, *bindip, *ohost, *sport, *p;
+	char *user, *group, **bindips, *ohost, *sport, *p;
 	struct passwd *us;
 	struct group *gr;
+	fd_set rfd;
 
 	base = stdbase;
 	port = stdport;
@@ -380,7 +420,8 @@ main(int argc, char *argv[])
 	group = NULL;
 	us = NULL;
 	gr = NULL;
-	bindip = NULL;
+	bindips = NULL;
+	nbindips = 0;
 	ohost = NULL;
 	sport = NULL;
 	inetf = AF_UNSPEC;
@@ -424,7 +465,8 @@ main(int argc, char *argv[])
 		group = EARGF(usage());
 		break;
 	case 'i':
-		bindip = EARGF(usage());
+		bindips = xrealloc(bindips, sizeof(*bindips) * (++nbindips));
+		bindips[nbindips-1] = EARGF(usage());
 		break;
 	case 'h':
 		ohost = EARGF(usage());
@@ -502,34 +544,50 @@ main(int argc, char *argv[])
 		glfd = 1;
 	}
 
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = inetf;
-	hints.ai_flags = AI_PASSIVE;
-	hints.ai_socktype = SOCK_STREAM;
-	if (bindip)
-		hints.ai_flags |= AI_CANONNAME;
+	if (bindips == NULL) {
+		bindips = xrealloc(bindips, sizeof(*bindips) * (++nbindips));
+		bindips[nbindips-1] = "0.0.0.0";
+		bindips = xrealloc(bindips, sizeof(*bindips) * (++nbindips));
+		bindips[nbindips-1] = "::";
+	}
 
-	if ((listfd = getlistenfd(&hints, bindip, port)) < 0) {
-		if (inetf == AF_UNSPEC) {
-			hints.ai_family = AF_INET;
-			listfd = getlistenfd(&hints, bindip, port);
+	for (i = 0; i < nbindips; i++) {
+		printf("binding %s:%s\n", bindips[i], port);
+
+		memset(&hints, 0, sizeof(hints));
+		hints.ai_family = inetf;
+		hints.ai_flags = AI_PASSIVE;
+		hints.ai_socktype = SOCK_STREAM;
+		if (bindips[i])
+			hints.ai_flags |= AI_CANONNAME;
+
+		nlfdret = 0;
+		lfdret = getlistenfd(&hints, bindips[i], port, &nlfdret);
+		if (nlfdret < 1) {
+			errno_save = errno;
+			fprintf(stderr, "Unable to get a binding socket for "
+					"%s:%s\n", bindips[i], port);
+			errno = errno_save;
+			perror("getlistenfd");
 		}
-		/* Save errno because of fprintf to stderr. */
-		errno_save = errno;
-	}
-	if (listfd < 0) {
-		fprintf(stderr, "Unable to get a binding socket. "
-				"Look at bindip and the tcp port.\n");
-		errno = errno_save;
-		perror("getlistenfd");
-		return 1;
-	}
 
-	if (listen(listfd, 255)) {
-		perror("listen");
-		close(listfd);
-		return 1;
+		printf("nlfdret = %d\n", nlfdret);
+		for (j = 0; j < nlfdret; j++) {
+			printf("lfdret[%d] = %d\n", j, lfdret[j]);
+			if (listen(lfdret[j], 255) < 0) {
+				perror("listen");
+				close(lfdret[j]);
+				continue;
+			}
+			listfds = xrealloc(listfds,
+					sizeof(*listfds) * ++nlistfds);
+			listfds[nlistfds-1] = lfdret[j];
+		}
+		if (lfdret != NULL)
+			free(lfdret);
 	}
+	if (nlistfds < 1)
+		return 1;
 
 	if (usechroot) {
 		if (chdir(base) < 0) {
@@ -552,7 +610,15 @@ main(int argc, char *argv[])
 
 	if (dropprivileges(gr, us) < 0) {
 		perror("dropprivileges");
-		close(listfd);
+		if (listfds != NULL) {
+			for (i = 0; i < nlistfds; i++) {
+				if (listfds[i] >= 0) {
+					shutdown(listfds[i], SHUT_RDWR);
+					close(listfds[i]);
+				}
+			}
+			free(listfds);
+		}
 		return 1;
 	}
 
@@ -569,7 +635,34 @@ main(int argc, char *argv[])
 #endif /* __OpenBSD__ */
 
 	while (1) {
+		FD_ZERO(&rfd);
+		maxlfd = 0;
+		for (i = 0; i < nlistfds; i++) {
+			FD_SET(listfds[i], &rfd);
+			if (listfds[i] > maxlfd)
+				maxlfd = listfds[i];
+		}
+
+		printf("pselect\n");
+		if (pselect(maxlfd+1, &rfd, NULL, NULL, NULL, NULL) < 0) {
+			if (errno == EINTR)
+				continue;
+			perror("pselect");
+			break;
+		}
+
+		listfd = -1;
+		for (i = 0; i < nlistfds; i++) {
+			if (FD_ISSET(listfds[i], &rfd)) {
+				listfd = listfds[i];
+				break;
+			}
+		}
+		if (listfd < 0)
+			continue;
+
 		cltlen = sizeof(clt);
+		printf("accept on %d\n", listfd);
 		sock = accept(listfd, (struct sockaddr *)&clt, &cltlen);
 		if (sock < 0) {
 			switch (errno) {
@@ -638,8 +731,15 @@ main(int argc, char *argv[])
 		close(sock);
 	}
 
-	shutdown(listfd, SHUT_RDWR);
-	close(listfd);
+	if (listfds != NULL) {
+		for (i = 0; i < nlistfds; i++) {
+			if (listfds[i] >= 0) {
+				shutdown(listfds[i], SHUT_RDWR);
+				close(listfds[i]);
+			}
+		}
+		free(listfds);
+	}
 	if (logfile != NULL && glfd != -1) {
 		close(glfd);
 		glfd = -1;
