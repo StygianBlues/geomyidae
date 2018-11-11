@@ -586,6 +586,9 @@ main(int argc, char *argv[])
 		if (lfdret != NULL)
 			free(lfdret);
 	}
+	if (bindips != NULL)
+		free(bindips);
+
 	if (nlistfds < 1)
 		return 1;
 
