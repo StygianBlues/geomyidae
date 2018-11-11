@@ -303,11 +303,11 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 	void *sinaddr;
 	int on, reqaf, listfd, aierr, errno_save;
 
-	if ((reqaf = hints->ai_family) == AF_UNSPEC)
-		hints->ai_family = AF_INET6;
+	reqaf = hints->ai_family;
 
 	if ((aierr = getaddrinfo(bindip, port, hints, &ai)) || ai == NULL) {
-		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(aierr));
+		fprintf(stderr, "getaddrinfo (%s:%s): %s\n", bindip, port,
+				gai_strerror(aierr));
 		exit(1);
 	}
 
