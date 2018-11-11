@@ -271,14 +271,12 @@ sighandler(int sig)
 			close(glfd);
 			glfd = -1;
 		}
-		if (listfds != NULL) {
-			for (i = 0; i < nlistfds; i++) {
-				if (listfds[i] >= 0) {
-					shutdown(listfds[i], SHUT_RDWR);
-					close(listfds[i]);
-				}
-			}
+
+		for (i = 0; i < nlistfds; i++) {
+			shutdown(listfds[i], SHUT_RDWR);
+			close(listfds[i]);
 		}
+		free(listfds);
 		exit(0);
 		break;
 	default:
@@ -583,11 +581,9 @@ main(int argc, char *argv[])
 					sizeof(*listfds) * ++nlistfds);
 			listfds[nlistfds-1] = lfdret[j];
 		}
-		if (lfdret != NULL)
-			free(lfdret);
+		free(lfdret);
 	}
-	if (bindips != NULL)
-		free(bindips);
+	free(bindips);
 
 	if (nlistfds < 1)
 		return 1;
@@ -613,15 +609,12 @@ main(int argc, char *argv[])
 
 	if (dropprivileges(gr, us) < 0) {
 		perror("dropprivileges");
-		if (listfds != NULL) {
-			for (i = 0; i < nlistfds; i++) {
-				if (listfds[i] >= 0) {
-					shutdown(listfds[i], SHUT_RDWR);
-					close(listfds[i]);
-				}
-			}
-			free(listfds);
+
+		for (i = 0; i < nlistfds; i++) {
+			shutdown(listfds[i], SHUT_RDWR);
+			close(listfds[i]);
 		}
+		free(listfds);
 		return 1;
 	}
 
@@ -734,20 +727,17 @@ main(int argc, char *argv[])
 		close(sock);
 	}
 
-	if (listfds != NULL) {
-		for (i = 0; i < nlistfds; i++) {
-			if (listfds[i] >= 0) {
-				shutdown(listfds[i], SHUT_RDWR);
-				close(listfds[i]);
-			}
-		}
-		free(listfds);
-	}
 	if (logfile != NULL && glfd != -1) {
 		close(glfd);
 		glfd = -1;
 	}
 	free(ohost);
+
+	for (i = 0; i < nlistfds; i++) {
+		shutdown(listfds[i], SHUT_RDWR);
+		close(listfds[i]);
+	}
+	free(listfds);
 
 	return 0;
 }
