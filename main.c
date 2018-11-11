@@ -301,9 +301,7 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 	char addstr[INET6_ADDRSTRLEN];
 	struct addrinfo *ai, *rp;
 	void *sinaddr;
-	int on, reqaf, listfd, aierr, errno_save;
-
-	reqaf = hints->ai_family;
+	int on, listfd, aierr, errno_save;
 
 	if ((aierr = getaddrinfo(bindip, port, hints, &ai)) || ai == NULL) {
 		fprintf(stderr, "getaddrinfo (%s:%s): %s\n", bindip, port,
@@ -320,14 +318,6 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 			continue;
 		if (setsockopt(listfd, SOL_SOCKET, SO_REUSEADDR, &on,
 					sizeof(on)) < 0) {
-			close(listfd);
-			listfd = -1;
-			break;
-		}
-
-		if (reqaf == AF_INET6 &&
-		   (setsockopt(listfd, IPPROTO_IPV6, IPV6_V6ONLY, &on,
-		               sizeof(on)) < 0)) {
 			close(listfd);
 			listfd = -1;
 			break;
