@@ -543,10 +543,14 @@ main(int argc, char *argv[])
 	}
 
 	if (bindips == NULL) {
-		bindips = xrealloc(bindips, sizeof(*bindips) * (++nbindips));
-		bindips[nbindips-1] = "0.0.0.0";
-		bindips = xrealloc(bindips, sizeof(*bindips) * (++nbindips));
-		bindips[nbindips-1] = "::";
+		if (inetf == AF_INET || inetf == AF_UNSPEC) {
+			bindips = xrealloc(bindips, sizeof(*bindips) * (++nbindips));
+			bindips[nbindips-1] = "0.0.0.0";
+		}
+		if (inetf == AF_INET6 || inetf == AF_UNSPEC) {
+			bindips = xrealloc(bindips, sizeof(*bindips) * (++nbindips));
+			bindips[nbindips-1] = "::";
+		}
 	}
 
 	for (i = 0; i < nbindips; i++) {
