@@ -301,7 +301,7 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 	char addstr[INET6_ADDRSTRLEN];
 	struct addrinfo *ai, *rp;
 	void *sinaddr;
-	int on, listfd, aierr, errno_save;
+	int on, listenfd, aierr, errno_save;
 
 	if ((aierr = getaddrinfo(bindip, port, hints, &ai)) || ai == NULL) {
 		fprintf(stderr, "getaddrinfo (%s:%s): %s\n", bindip, port,
@@ -309,17 +309,17 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 		exit(1);
 	}
 
-	listfd = -1;
+	listenfd = -1;
 	on = 1;
 	for (rp = ai; rp != NULL; rp = rp->ai_next) {
-		listfd = socket(rp->ai_family, rp->ai_socktype,
+		listenfd = socket(rp->ai_family, rp->ai_socktype,
 				rp->ai_protocol);
-		if (listfd < 0)
+		if (listenfd < 0)
 			continue;
-		if (setsockopt(listfd, SOL_SOCKET, SO_REUSEADDR, &on,
+		if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on,
 					sizeof(on)) < 0) {
-			close(listfd);
-			listfd = -1;
+			close(listenfd);
+			listenfd = -1;
 			break;
 		}
 
@@ -327,7 +327,7 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 		          (void *)&((struct sockaddr_in *)rp->ai_addr)->sin_addr :
 		          (void *)&((struct sockaddr_in6 *)rp->ai_addr)->sin6_addr;
 
-		if (bind(listfd, rp->ai_addr, rp->ai_addrlen) == 0) {
+		if (bind(listenfd, rp->ai_addr, rp->ai_addrlen) == 0) {
 			if (loglvl & CONN && inet_ntop(rp->ai_family, sinaddr,
 			    addstr, sizeof(addstr))) {
 				logentry(addstr, port, "-", "listening");
@@ -337,7 +337,7 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 
 		/* Save errno, because fprintf in logentry overwrites it. */
 		errno_save = errno;
-		close(listfd);
+		close(listenfd);
 		if (loglvl & CONN && inet_ntop(rp->ai_family, sinaddr,
 		    addstr, sizeof(addstr))) {
 			logentry(addstr, port, "-", "could not bind");
@@ -348,7 +348,7 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port)
 	if (rp == NULL)
 		return -1;
 
-	return listfd;
+	return listenfd;
 }
 
 void
