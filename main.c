@@ -23,7 +23,6 @@
 #include <grp.h>
 #include <errno.h>
 #include <arpa/inet.h>
-#include <limits.h>
 #include <sys/select.h>
 #include <sys/time.h>
 
@@ -481,8 +480,9 @@ main(int argc, char *argv[])
 		usage();
 
 	if (ohost == NULL) {
-		ohost = xcalloc(1, HOST_NAME_MAX+1);
-		if (gethostname(ohost, HOST_NAME_MAX) < 0) {
+		/* Do not use MAX_NAME_HOST, it is not defined on NetBSD. */
+		ohost = xcalloc(1, 256+1);
+		if (gethostname(ohost, 256) < 0) {
 			perror("gethostname");
 			free(ohost);
 			return 1;
