@@ -652,7 +652,6 @@ main(int argc, char *argv[])
 			continue;
 
 		cltlen = sizeof(clt);
-		printf("accept on %d\n", listfd);
 		sock = accept(listfd, (struct sockaddr *)&clt, &cltlen);
 		if (sock < 0) {
 			switch (errno) {
