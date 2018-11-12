@@ -480,7 +480,7 @@ main(int argc, char *argv[])
 		usage();
 
 	if (ohost == NULL) {
-		/* Do not use MAX_NAME_HOST, it is not defined on NetBSD. */
+		/* Do not use HOST_NAME_MAX, it is not defined on NetBSD. */
 		ohost = xcalloc(1, 256+1);
 		if (gethostname(ohost, 256) < 0) {
 			perror("gethostname");
