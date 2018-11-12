@@ -320,20 +320,16 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port, int *rlfdnum)
 	listenfds = NULL;
 	on = 1;
 	for (rp = ai; rp != NULL; rp = rp->ai_next) {
-		printf("getaddrinfo result: %s:%d\n", rp->ai_canonname,
-				rp->ai_protocol);
 		listenfds = xrealloc(listenfds,
 				sizeof(*listenfds) * (++*rlfdnum));
 		listenfd = &listenfds[*rlfdnum-1];
 
 		*listenfd = socket(rp->ai_family, rp->ai_socktype,
 				rp->ai_protocol);
-		printf("*listenfd = %d\n", *listenfd);
 		if (*listenfd < 0)
 			continue;
 		if (setsockopt(*listenfd, SOL_SOCKET, SO_REUSEADDR, &on,
 				sizeof(on)) < 0) {
-			printf("setsockopt failed\n");
 			close(*listenfd);
 			(*rlfdnum)--;
 			continue;
@@ -342,7 +338,6 @@ getlistenfd(struct addrinfo *hints, char *bindip, char *port, int *rlfdnum)
 		if (rp->ai_family == AF_INET6 && (setsockopt(*listenfd,
 				IPPROTO_IPV6, IPV6_V6ONLY, &on,
 				sizeof(on)) < 0)) {
-			printf("ipv6 only failed\n");
 			close(*listenfd);
 			(*rlfdnum)--;
 			continue;
@@ -554,8 +549,6 @@ main(int argc, char *argv[])
 	}
 
 	for (i = 0; i < nbindips; i++) {
-		printf("binding %s:%s\n", bindips[i], port);
-
 		memset(&hints, 0, sizeof(hints));
 		hints.ai_family = inetf;
 		hints.ai_flags = AI_PASSIVE;
@@ -573,9 +566,7 @@ main(int argc, char *argv[])
 			perror("getlistenfd");
 		}
 
-		printf("nlfdret = %d\n", nlfdret);
 		for (j = 0; j < nlfdret; j++) {
-			printf("lfdret[%d] = %d\n", j, lfdret[j]);
 			if (listen(lfdret[j], 255) < 0) {
 				perror("listen");
 				close(lfdret[j]);
@@ -643,7 +634,6 @@ main(int argc, char *argv[])
 				maxlfd = listfds[i];
 		}
 
-		printf("pselect\n");
 		if (pselect(maxlfd+1, &rfd, NULL, NULL, NULL, NULL) < 0) {
 			if (errno == EINTR)
 				continue;
