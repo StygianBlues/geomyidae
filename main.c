@@ -386,7 +386,7 @@ usage(void)
 {
 	dprintf(2, "usage: %s [-46cden] [-l logfile] "
 	           "[-v loglvl] [-b base] [-p port] [-o sport] "
-	           "[-u user] [-g group] [-h host] [-i IP]\n",
+	           "[-u user] [-g group] [-h host] [-i interface ...]\n",
 		   argv0);
 	exit(1);
 }

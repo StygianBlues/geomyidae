@@ -25,7 +25,7 @@
 .Op Fl u Ar user
 .Op Fl g Ar group
 .Op Fl h Ar host
-.Op Fl i Ar IP
+.Op Fl i Ar interface ...
 .Ek
 .
 .Sh DESCRIPTION
@@ -153,8 +153,9 @@ processing.
 .It Fl h Ar host
 Host to use in directory listings (default: localhost)
 .
-.It Fl i Ar IP
-IP to which geomyidae binds to (default: 0.0.0.0)
+.It Fl i Ar interface
+Defines the interface to which geomyidae binds to (default: 0.0.0.0).
+Multiple interfaces can be given.
 .El
 .
 .Sh FORMATTING
