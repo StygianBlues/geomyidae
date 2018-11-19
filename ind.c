@@ -341,6 +341,23 @@ getadv(char *str)
 			addelem(ret, b);
 		}
 		free(o);
+
+		if (ret->e != NULL && ret->e[0] != NULL && ret->e[0][0] == '\0') {
+			freeelem(ret);
+			ret = xcalloc(1, sizeof(Elems));
+
+			addelem(ret, "i");
+			addelem(ret, "Happy helping ☃ here: You did not "
+				"specify an item type on this line. Please "
+				"review your scripts. "
+				"Have a nice day!");
+			addelem(ret, "Err");
+			addelem(ret, "server");
+			addelem(ret, "port");
+
+			return ret;
+		}
+
 		if (ret->e != NULL && ret->num == 5)
 			return ret;
 
