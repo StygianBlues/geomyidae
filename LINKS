@@ -12,6 +12,8 @@
 * A collection of gopher interfaces (rss feeds, instagram, nntp,
   reddit, twitter, youtube) by leot
 	* https://bitbucket.org/iamleot/gophercgis
+* A searx dcgi interface
+	* gopher://me0w.net/0/pit/1540910324
 
 
 Please propose any you find!
