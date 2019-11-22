@@ -36,11 +36,12 @@ enum {
 	DIRS	= 2,
 	HTTP	= 4,
 	ERRORS	= 8,
-	CONN	= 16
+	CONN	= 16,
+	GPLUS	= 32
 };
 
 int glfd = -1;
-int loglvl = 15;
+int loglvl = 37;
 int *listfds = NULL;
 int nlistfds = 0;
 int revlookup = 1;
@@ -120,7 +121,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 {
 	struct stat dir;
 	char recvc[1025], recvb[1025], path[1025], *args, *sear, *c;
-	int len, fd, i;
+	int len, fd, i, retl, maxrecv;
 	filetype *type;
 
 	memset(&dir, 0, sizeof(dir));
@@ -128,12 +129,23 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 	memset(recvc, 0, sizeof(recvc));
 	args = NULL;
 
-	len = recv(sock, recvb, sizeof(recvb)-1, 0);
-	if (len <= 0) {
-		if (len < 0)
-			perror("recv");
+	len = 0;
+	maxrecv = sizeof(recvb);
+	/*
+	 * Force at least one byte per packet. Limit, so the server
+	 * cannot be put into DoS via zero-length packets.
+	 */
+	do {
+		retl = recv(sock, recvb+len, sizeof(recvb)-1-len, 0);
+		if (retl <= 0) {
+			if (retl < 0)
+				perror("recv");
+			break;
+		}
+		len += retl;
+	} while (recvb[len-1] != '\n' && --maxrecv > 0);
+	if (len <= 0)
 		return;
-	}
 
 	c = strchr(recvb, '\r');
 	if (c)
@@ -154,6 +166,8 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 		 * CRAP.
 		 */
 		if (*sear == '+' || *sear == '$' || *sear == '!' || *sear == '\0') {
+			if (loglvl & GPLUS)
+				logentry(clienth, clientp, recvb, "gopher+ redirect");
 			dprintf(sock, "+-2\r\n");
 			dprintf(sock, "+INFO: 1gopher+\t\t%s\t%s\r\n",
 					ohost, port);
