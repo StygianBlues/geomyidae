@@ -41,7 +41,7 @@ enum {
 };
 
 int glfd = -1;
-int loglvl = 37;
+int loglvl = 47;
 int *listfds = NULL;
 int nlistfds = 0;
 int revlookup = 1;
