@@ -1,6 +1,6 @@
 .\" geomyidae.8 handcrafted in GNU groff -mdoc using nvi
 .\"
-.Dd March 26, 2011
+.Dd February 23, 2020
 .Dt GEOMYIDAE 8
 .Os
 .
@@ -53,17 +53,17 @@ commands.  The resulting executable should be run by root.
 .Ss Basic Installation and Startup:
 .Bd -literal
 
-     % wget http://www.r-36.net/src/geomyidae/geomyidae-current.tgz;
-     % tar -xzvf geomyidae-*.tgz;
-     % cd geomyidae-*;
-     % make; sudo make install;
-     % sudo mkdir -p /var/gopher;
-     % sudo cp index.gph /var/gopher;
-     % sudo geomyidae -l /var/log/geomyidae.log -b /var/gopher -p 70;
-     % tail -f /var/log/geomyidae.log;
+     $ wget http://www.r-36.net/src/geomyidae/geomyidae-current.tgz
+     $ tar -xzvf geomyidae-*.tgz
+     $ cd geomyidae-*
+     $ make; sudo make install
+     $ sudo mkdir -p /var/gopher
+     $ sudo cp index.gph /var/gopher
+     $ sudo geomyidae -l /var/log/geomyidae.log -b /var/gopher -p 70
+     $ tail -f /var/log/geomyidae.log
 
      Use whatever gopher client you like (ie. lynx) to browse:
-     % lynx gopher://localhost
+     $ lynx gopher://localhost
 .Ed
 .
 .Ss Running
@@ -108,10 +108,10 @@ Disable execution of any CGI or DCGI script.
 Don't perform reverse lookups.
 .
 .It Fl l Ar logfile
-Specify file where log output is written (no default)
+Specify file where log output is written (no default).
 .
 .It Fl v Ar loglevel
-Set the logging level (default: 47)
+Set the logging level (default: 47).
 .
 .Bd -literal
 Loglevels:
@@ -131,7 +131,7 @@ Loglevels:
 Root directory to serve (default: /var/gopher).
 .
 .It Fl p Ar port
-Port geomyidae should listen on (default: 70)
+Port geomyidae should listen on (default: 70).
 .
 .It Fl o Ar sport
 Port geomyidae displays within base directory (default: 70).
@@ -152,7 +152,7 @@ Helps improve security by reducing privileges during request
 processing.
 .
 .It Fl h Ar host
-Host to use in directory listings (default: localhost)
+Host to use in directory listings (default: localhost).
 .
 .It Fl i Ar interface
 Defines the interface to which geomyidae binds to (default: 0.0.0.0).
@@ -193,9 +193,9 @@ Some common Gopher Types as defined in
 :
 .
 .Bd -literal
- 0   Item is a file
- 1   Gopher directory
- 3   Error
+ 0   Item is a file.
+ 1   Gopher directory.
+ 3   Error.
  7   Item is an Index-Search server.
  8   Item points to a text-based telnet session.
  9   Binary file. Client reads until TCP connection closes!
@@ -205,8 +205,8 @@ Some common Gopher Types as defined in
 .Pp
 In addition, geomyidae provides these:
 .Bd -literal
- h   Item is a hypertext (HTTP) link
- i   Informational Item (used for descriptive purposes)
+ h   Item is a hypertext (HTTP) link.
+ i   Informational Item (used for descriptive purposes).
 .Ed
 .
 .Bd -filled
@@ -230,7 +230,7 @@ intended clients. If this is set to
 , the server's hostname is used.
 .
 .It Ic <port>
-= TCP port number (usually 70)
+= TCP port number (usually 70).
 .
 If this is set to
 .Qq "port"
