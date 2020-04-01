@@ -9,7 +9,7 @@ $_rc_subr_loaded . /etc/rc.subr
 
 name="geomyidae"
 rcvar=$name
-command="/usr/local/bin/${name}"
+command="/usr/local/sbin/${name}"
 
 #####################################################
 # Geomyidae Options Section - "?" => geomyidae(8)   #

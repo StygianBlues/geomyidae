@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Array of all PIDS
-PID=($(pidof -o %PPID /usr/bin/geomyidae))
+PID=($(pidof -o %PPID /usr/sbin/geomyidae))
 
 case "$1" in
     start)
