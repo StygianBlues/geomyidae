@@ -40,7 +40,8 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 	par = xstrdup(pa);
 	b = strrchr(par + strlen(base), '/');
 	if (b != NULL) {
-		*b = '\0';
+		if (strlen(par) > 1)
+			*b = '\0';
 		dprintf(sock, "1..\t%s\t%s\t%s\r\n",
 			par + strlen(base), ohost, port);
 	}
