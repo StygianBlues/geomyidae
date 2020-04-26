@@ -40,15 +40,13 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 	par = xstrdup(pa);
 	b = strrchr(par + strlen(base), '/');
 	if (b != NULL) {
-		if (b != par) {
-			*b = '\0';
-			dprintf(sock, "1..\t%s\t%s\t%s\r\n",
-				par + strlen(base), ohost, port);
-		}
+		*b = '\0';
+		dprintf(sock, "1..\t%s\t%s\t%s\r\n",
+			par + strlen(base), ohost, port);
 	}
 	free(par);
 
-	ndir = scandir(pa, &dirent, 0, alphasort);
+	ndir = scandir(pa[0] ? pa : ".", &dirent, 0, alphasort);
 	if (ndir < 0) {
 		perror("scandir");
 		free(pa);
