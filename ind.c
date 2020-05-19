@@ -57,6 +57,7 @@ filetype type[] = {
 	{"c", "0", handlebin},
 	{"sh", "0", handlebin},
 	{"patch", "0", handlebin},
+	{"meme", "0", handlebin},
 	{NULL, NULL, NULL},
 };
 
