@@ -119,23 +119,19 @@ xsendfile(int fd, int sock)
 		count = st.st_size;
 	}
 
-	if (count == 0) {
-		sendb = xmalloc(bufsiz);
-		while ((len = read(fd, sendb, bufsiz)) > 0) {
-			sendi = sendb;
-			while (len > 0) {
-				if ((sent = send(sock, sendi, len, 0)) < 0) {
-					free(sendb);
-					return -1;
-				}
-				len -= sent;
-				sendi += sent;
+	sendb = xmalloc(bufsiz);
+	while ((len = read(fd, sendb, bufsiz)) > 0) {
+		sendi = sendb;
+		while (len > 0) {
+			if ((sent = send(sock, sendi, len, 0)) < 0) {
+				free(sendb);
+				return -1;
 			}
+			len -= sent;
+			sendi += sent;
 		}
-		free(sendb);
-		return 0;
 	}
-
+	free(sendb);
 	return 0;
 }
 
