@@ -802,7 +802,7 @@ main(int argc, char *argv[])
 						for (shufpos = 0; shufpos < shuflen; shufpos += wlen) {
 							wlen = tls_write(tlsclientctx, shufbuf+shufpos, shuflen-shufpos);
 							if (wlen < 0) {
-								printf("tls_write failed: %s\n", tls_error(tlsclientctx));
+								fprintf(stderr, "tls_write failed: %s\n", tls_error(tlsclientctx));
 								return 1;
 							}
 						}
