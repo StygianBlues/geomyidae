@@ -777,7 +777,23 @@ main(int argc, char *argv[])
 				if (tls_handshake(tlsclientctx) < 0)
 					return 1;
 			}
-#endif /* ENABLE_TLS */
+#else /* ENABLE_TLS */
+			/*
+			 * Some TLS request. Help them determine we only
+			 * serve plaintext.
+			 */
+			if (byte0 == 0x16) {
+				if (loglvl & CONN) {
+					logentry(clienth, clientp, "-",
+							"disconnected");
+				}
+
+				shutdown(sock, SHUT_RDWR);
+				close(sock);
+
+				return 1;
+			}
+#endif
 
 			maxrecv = sizeof(recvb) - 1;
 			do {
