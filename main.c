@@ -764,15 +764,16 @@ main(int argc, char *argv[])
 				if (istls) {
 					retl = tls_read(tlsclientctx,
 						recvb+rlen, sizeof(recvb)-1-rlen);
+					if (retl < 0)
+						fprintf(stderr, "tls_read failed: %s\n", tls_error(tlsclientctx));
 				} else {
 					retl = read(sock, recvb+rlen,
 						sizeof(recvb)-1-rlen);
-				}
-				if (retl <= 0) {
 					if (retl < 0)
-						perror("recv");
-					break;
+						perror("read");
 				}
+				if (retl <= 0)
+					break;
 				rlen += retl;
 			} while (recvb[rlen-1] != '\n'
 					&& --maxrecv > 0);
