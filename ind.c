@@ -108,16 +108,14 @@ xsendfile(int fd, int sock)
 {
 	struct stat st;
 	char *sendb, *sendi;
-	size_t bufsiz = BUFSIZ, count = 0;
+	size_t bufsiz = BUFSIZ;
 	int len, sent, optval;
 
 	USED(optval);
 
-	if (fstat(fd, &st) >= 0) {
+	if (fstat(fd, &st) >= 0)
 		if ((bufsiz = st.st_blksize) < BUFSIZ)
 			bufsiz = BUFSIZ;
-		count = st.st_size;
-	}
 
 	sendb = xmalloc(bufsiz);
 	while ((len = read(fd, sendb, bufsiz)) > 0) {
