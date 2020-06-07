@@ -25,6 +25,7 @@
 #include <arpa/inet.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include <tls.h>
 
 #include "ind.h"
 #include "handlr.h"
@@ -116,34 +117,22 @@ logentry(char *host, char *port, char *qry, char *status)
 }
 
 void
-handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
-			char *clientp, int nocgi)
+handlerequest(int sock, char *req, int rlen, char *base, char *ohost,
+	      char *port, char *clienth, char *clientp, int nocgi)
 {
 	struct stat dir;
 	char recvc[1025], recvb[1025], path[1025], *args = NULL, *sear, *c;
-	int len = 0, fd, i, retl, maxrecv;
+	int len = 0, fd, i, maxrecv;
 	filetype *type;
 
 	memset(&dir, 0, sizeof(dir));
 	memset(recvb, 0, sizeof(recvb));
 	memset(recvc, 0, sizeof(recvc));
 
-	maxrecv = sizeof(recvb);
-	/*
-	 * Force at least one byte per packet. Limit, so the server
-	 * cannot be put into DoS via zero-length packets.
-	 */
-	do {
-		retl = recv(sock, recvb+len, sizeof(recvb)-1-len, 0);
-		if (retl <= 0) {
-			if (retl < 0)
-				perror("recv");
-			break;
-		}
-		len += retl;
-	} while (recvb[len-1] != '\n' && --maxrecv > 0);
-	if (len <= 0)
+	maxrecv = sizeof(recvb) - 1;
+	if (rlen > maxrecv || rlen < 0)
 		return;
+	memcpy(recvb, req, rlen);
 
 	c = strchr(recvb, '\r');
 	if (c)
@@ -174,7 +163,7 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 		}
 	}
 
-	memmove(recvc, recvb, len+1);
+	memmove(recvc, recvb, rlen+1);
 
 	if (!strncmp(recvb, "URL:", 4)) {
 		len = snprintf(path, sizeof(path), htredir,
@@ -409,6 +398,7 @@ void
 usage(void)
 {
 	dprintf(2, "usage: %s [-46cden] [-l logfile] "
+		   "[-t keyfile certfile] "
 	           "[-v loglvl] [-b base] [-p port] [-o sport] "
 	           "[-u user] [-g group] [-h host] [-i interface ...]\n",
 		   argv0);
@@ -423,13 +413,18 @@ main(int argc, char *argv[])
 	socklen_t cltlen;
 	int sock, dofork = 1, inetf = AF_UNSPEC, usechroot = 0,
 	    nocgi = 0, errno_save, nbindips = 0, i, j,
-	    nlfdret, *lfdret, listfd, maxlfd;
+	    nlfdret, *lfdret, listfd, maxlfd, dotls = 0, istls = 0,
+	    shuflen, wlen, shufpos, tlspipe[2], maxrecv, retl,
+	    rlen = 0;
 	fd_set rfd;
 	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV],
 	     *user = NULL, *group = NULL, **bindips = NULL,
-	     *ohost = NULL, *sport = NULL, *p;
+	     *ohost = NULL, *sport = NULL, *p, *certfile = NULL,
+	     *keyfile = NULL, shufbuf[1025], byte0, recvb[1025];
 	struct passwd *us = NULL;
 	struct group *gr = NULL;
+	struct tls_config *tlsconfig = NULL;
+	struct tls *tlsctx = NULL, *tlsclientctx;
 
 	base = stdbase;
 	port = stdport;
@@ -483,6 +478,11 @@ main(int argc, char *argv[])
 	case 'n':
 		revlookup = 0;
 		break;
+	case 't':
+		dotls = 1;
+		keyfile = EARGF(usage());
+		certfile = EARGF(usage());
+		break;
 	default:
 		usage();
 	} ARGEND;
@@ -492,6 +492,33 @@ main(int argc, char *argv[])
 
 	if (argc != 0)
 		usage();
+
+	if (dotls) {
+		if (tls_init() < 0) {
+			perror("tls_init");
+			return 1;
+		}
+		if ((tlsconfig = tls_config_new()) == NULL) {
+			perror("tls_config_new");
+			return 1;
+		}
+		if ((tlsctx = tls_server()) == NULL) {
+			perror("tls_server");
+			return 1;
+		}
+		if (tls_config_set_key_file(tlsconfig, keyfile) < 0) {
+			perror("tls_config_set_key_file");
+			return 1;
+		}
+		if (tls_config_set_cert_file(tlsconfig, certfile) < 0) {
+			perror("tls_config_set_cert_file");
+			return 1;
+		}
+		if (tls_configure(tlsctx, tlsconfig) < 0) {
+			perror("tls_configure");
+			return 1;
+		}
+	}
 
 	if (ohost == NULL) {
 		/* Do not use HOST_NAME_MAX, it is not defined on NetBSD. */
@@ -716,16 +743,97 @@ main(int argc, char *argv[])
 			}
 #endif /* __OpenBSD__ */
 
-			handlerequest(sock, base, ohost, sport, clienth,
-						clientp, nocgi);
+			if (recv(sock, &byte0, 1, MSG_PEEK) < 1)
+				return 1;
 
-			waitforpendingbytes(sock);
+			/*
+			 * First byte is 0x16 == 22, which is the TLS
+			 * Handshake first byte.
+			 */
+			istls = 0;
+			if (byte0 == 0x16 && dotls) {
+				istls = 1;
+				if (tls_accept_socket(tlsctx, &tlsclientctx, sock) < 0)
+					return 1;
+				if (tls_handshake(tlsclientctx) < 0)
+					return 1;
+			}
 
-			shutdown(sock, SHUT_RDWR);
+			maxrecv = sizeof(recvb) - 1;
+			do {
+				if (istls) {
+					retl = tls_read(tlsclientctx,
+						recvb+rlen, sizeof(recvb)-1-rlen);
+				} else {
+					retl = read(sock, recvb+rlen,
+						sizeof(recvb)-1-rlen);
+				}
+				if (retl <= 0) {
+					if (retl < 0)
+						perror("recv");
+					break;
+				}
+				rlen += retl;
+			} while (recvb[rlen-1] != '\n'
+					&& --maxrecv > 0);
+			if (rlen <= 0)
+				return 1;
+
+			if (istls) {
+				if (pipe(tlspipe) < 0) {
+					perror("tls_pipe");
+					return 1;
+				}
+
+				switch(fork()) {
+				case 0:
+					sock = tlspipe[1];
+					close(tlspipe[0]);
+					break;
+				case -1:
+					perror("fork");
+					return 1;
+				default:
+					close(tlspipe[1]);
+					do {
+						shuflen = read(tlspipe[0], shufbuf, sizeof(shufbuf)-1);
+						if (shuflen == EINTR)
+							continue;
+						for (shufpos = 0; shufpos < shuflen; shufpos += wlen) {
+							wlen = tls_write(tlsclientctx, shufbuf+shufpos, shuflen-shufpos);
+							if (wlen < 0) {
+								printf("tls_write failed: %s\n", tls_error(tlsclientctx));
+								return 1;
+							}
+						}
+					} while(shuflen > 0);
+
+					tls_close(tlsclientctx);
+					tls_free(tlsclientctx);
+					close(tlspipe[0]);
+
+					waitforpendingbytes(sock);
+					shutdown(sock, SHUT_RDWR);
+					close(sock);
+					return 0;
+				}
+			}
+
+			handlerequest(sock, recvb, rlen, base,
+					ohost, sport, clienth,
+					clientp, nocgi);
+
+			if (!istls) {
+				waitforpendingbytes(sock);
+				shutdown(sock, SHUT_RDWR);
+				close(sock);
+			}
 			close(sock);
 
-			if (loglvl & CONN)
-				logentry(clienth, clientp, "-", "disconnected");
+			if (loglvl & CONN) {
+				logentry(clienth, clientp, "-",
+						"disconnected");
+			}
 
 			return 0;
 		default:
@@ -745,6 +853,12 @@ main(int argc, char *argv[])
 		close(listfds[i]);
 	}
 	free(listfds);
+
+	if (dotls) {
+		tls_close(tlsctx);
+		tls_free(tlsctx);
+		tls_config_free(tlsconfig);
+	}
 
 	return 0;
 }

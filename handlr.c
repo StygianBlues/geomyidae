@@ -16,6 +16,8 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <sys/wait.h>
+#include <errno.h>
+
 #include "ind.h"
 #include "arg.h"
 
@@ -205,11 +207,11 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 	if (args == NULL)
 		args = "";
 
-	dup2(sock, 0);
-	dup2(sock, 2);
+	while (dup2(sock, 0) < 0 && errno == EINTR);
+	while (dup2(sock, 2) < 0 && errno == EINTR);
 	switch (fork()) {
 	case 0:
-		dup2(outpipe[1], 1);
+		while(dup2(outpipe[1], 1) < 0 && errno == EINTR);
 		close(outpipe[0]);
 		if (path != NULL) {
 			if (chdir(path) < 0)
@@ -223,11 +225,12 @@ handledcgi(int sock, char *file, char *port, char *base, char *args,
 			perror("execl");
 			_exit(1);
 		}
+		break;
 	case -1:
 		perror("fork");
 		break;
 	default:
-		dup2(sock, 1);
+		while(dup2(sock, 1) < 0 && errno == EINTR);
 		close(outpipe[1]);
 
 		if (!(fp = fdopen(outpipe[0], "r"))) {

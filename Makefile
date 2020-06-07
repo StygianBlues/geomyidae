@@ -11,7 +11,7 @@ MANDIR = ${PREFIX}/share/man/man8
 
 CFLAGS = -O2 -Wall
 GEOM_CFLAGS = -D_DEFAULT_SOURCE -I. -I/usr/include ${CFLAGS}
-GEOM_LDFLAGS = -L/usr/lib -L. ${LDFLAGS}
+GEOM_LDFLAGS = -L/usr/lib -L. -ltls ${LDFLAGS}
 
 SRC = main.c ind.c handlr.c
 OBJ = ${SRC:.c=.o}
