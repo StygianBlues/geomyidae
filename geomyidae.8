@@ -26,6 +26,7 @@
 .Op Fl g Ar group
 .Op Fl h Ar host
 .Op Fl i Ar interface ...
+.Op Fl t Ar keyfile certfile
 .Ek
 .
 .Sh DESCRIPTION
@@ -157,6 +158,13 @@ Host to use in directory listings (default: localhost).
 .It Fl i Ar interface
 Defines the interface to which geomyidae binds to (default: 0.0.0.0).
 Multiple interfaces can be given.
+.
+.It Fl t Ar keyfile certfile
+Use the private key
+.Ar keyfile
+and the public key
+.Ar certfile
+for TLS connections.
 .El
 .
 .Sh FORMATTING
