@@ -797,7 +797,7 @@ main(int argc, char *argv[])
 					close(tlspipe[1]);
 					do {
 						shuflen = read(tlspipe[0], shufbuf, sizeof(shufbuf)-1);
-						if (shuflen == EINTR)
+						if (shuflen == -1 && errno == EINTR)
 							continue;
 						for (shufpos = 0; shufpos < shuflen; shufpos += wlen) {
 							wlen = tls_write(tlsclientctx, shufbuf+shufpos, shuflen-shufpos);
