@@ -19,14 +19,6 @@
 #include <sys/ioctl.h>
 #include <limits.h>
 
-/* for sendfile(2) */
-#ifdef __linux__
-#include <sys/sendfile.h>
-#elif defined(__FreeBSD__) || defined(__DragonFly__)
-#include <sys/types.h>
-#include <sys/uio.h>
-#endif
-
 #include "arg.h"
 #include "ind.h"
 #include "handlr.h"
@@ -121,39 +113,11 @@ xsendfile(int fd, int sock)
 
 	USED(optval);
 
-/* Tell the kernel to not send small packets on every write. */
-#ifdef TCP_CORK
-	optval = 1;
-	setsockopt(sock, IPPROTO_TCP, TCP_CORK, &optval, sizeof(int));
-#endif
-
-/* TCP_CORK for FreeBSD */
-#ifdef TCP_NOPUSH
-	optval = 1;
-	setsockopt(sock, IPPROTO_TCP, TCP_NOPUSH, &optval, sizeof(int));
-#endif
-
-/*
- * Enforce Nagle algorithm so big packets are sent out, if possible.
- */
-#ifdef TCP_NODELAY
-	optval = 0;
-	setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(int));
-#endif
-
 	if (fstat(fd, &st) >= 0) {
 		if ((bufsiz = st.st_blksize) < BUFSIZ)
 			bufsiz = BUFSIZ;
 		count = st.st_size;
 	}
-
-/*
- * If we are on the said operating systems, use some special method for data
- * transfer.
- */
-#if !defined(__linux__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
-	count = 0;
-#endif
 
 	if (count == 0) {
 		sendb = xmalloc(bufsiz);
@@ -171,18 +135,6 @@ xsendfile(int fd, int sock)
 		free(sendb);
 		return 0;
 	}
-
-/* Different sendfile(2) implementations on different platforms. :/ */
-#ifdef __linux__
-	for (sent = 0; count > 0; count -= sent) {
-		sent = sendfile(sock, fd, 0, count);
-		if (sent < 0)
-			return -1;
-	}
-#endif
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-	return sendfile(fd, sock, 0, count, NULL, NULL, 0);
-#endif
 
 	return 0;
 }
