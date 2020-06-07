@@ -25,7 +25,10 @@
 #include <arpa/inet.h>
 #include <sys/select.h>
 #include <sys/time.h>
+
+#ifdef ENABLE_TLS
 #include <tls.h>
+#endif /* ENABLE_TLS */
 
 #include "ind.h"
 #include "handlr.h"
@@ -398,7 +401,9 @@ void
 usage(void)
 {
 	dprintf(2, "usage: %s [-46cden] [-l logfile] "
+#ifdef ENABLE_TLS
 		   "[-t keyfile certfile] "
+#endif /* ENABLE_TLS */
 	           "[-v loglvl] [-b base] [-p port] [-o sport] "
 	           "[-u user] [-g group] [-h host] [-i interface ...]\n",
 		   argv0);
@@ -413,18 +418,27 @@ main(int argc, char *argv[])
 	socklen_t cltlen;
 	int sock, dofork = 1, inetf = AF_UNSPEC, usechroot = 0,
 	    nocgi = 0, errno_save, nbindips = 0, i, j,
-	    nlfdret, *lfdret, listfd, maxlfd, dotls = 0, istls = 0,
-	    shuflen, wlen, shufpos, tlspipe[2], maxrecv, retl,
+	    nlfdret, *lfdret, listfd, maxlfd, istls = 0,
+#ifdef ENABLE_TLS
+	    dotls = 0, tlspipe[2], shufbuf[1025],
+	    shuflen, wlen, shufpos,
+#endif /* ENABLE_TLS */
+	    maxrecv, retl,
 	    rlen = 0;
 	fd_set rfd;
 	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV],
 	     *user = NULL, *group = NULL, **bindips = NULL,
-	     *ohost = NULL, *sport = NULL, *p, *certfile = NULL,
-	     *keyfile = NULL, shufbuf[1025], byte0, recvb[1025];
+	     *ohost = NULL, *sport = NULL, *p,
+#ifdef ENABLE_TLS
+	     *certfile = NULL, *keyfile = NULL,
+#endif /* ENABLE_TLS */
+	     byte0, recvb[1025];
 	struct passwd *us = NULL;
 	struct group *gr = NULL;
+#ifdef ENABLE_TLS
 	struct tls_config *tlsconfig = NULL;
 	struct tls *tlsctx = NULL, *tlsclientctx;
+#endif /* ENABLE_TLS */
 
 	base = stdbase;
 	port = stdport;
@@ -478,11 +492,13 @@ main(int argc, char *argv[])
 	case 'n':
 		revlookup = 0;
 		break;
+#ifdef ENABLE_TLS
 	case 't':
 		dotls = 1;
 		keyfile = EARGF(usage());
 		certfile = EARGF(usage());
 		break;
+#endif /* ENABLE_TLS */
 	default:
 		usage();
 	} ARGEND;
@@ -493,6 +509,7 @@ main(int argc, char *argv[])
 	if (argc != 0)
 		usage();
 
+#ifdef ENABLE_TLS
 	if (dotls) {
 		if (tls_init() < 0) {
 			perror("tls_init");
@@ -519,6 +536,7 @@ main(int argc, char *argv[])
 			return 1;
 		}
 	}
+#endif /* ENABLE_TLS */
 
 	if (ohost == NULL) {
 		/* Do not use HOST_NAME_MAX, it is not defined on NetBSD. */
@@ -746,6 +764,7 @@ main(int argc, char *argv[])
 			if (recv(sock, &byte0, 1, MSG_PEEK) < 1)
 				return 1;
 
+#ifdef ENABLE_TLS
 			/*
 			 * First byte is 0x16 == 22, which is the TLS
 			 * Handshake first byte.
@@ -758,15 +777,19 @@ main(int argc, char *argv[])
 				if (tls_handshake(tlsclientctx) < 0)
 					return 1;
 			}
+#endif /* ENABLE_TLS */
 
 			maxrecv = sizeof(recvb) - 1;
 			do {
+#ifdef ENABLE_TLS
 				if (istls) {
 					retl = tls_read(tlsclientctx,
 						recvb+rlen, sizeof(recvb)-1-rlen);
 					if (retl < 0)
 						fprintf(stderr, "tls_read failed: %s\n", tls_error(tlsclientctx));
-				} else {
+				} else
+#endif /* ENABLE_TLS */
+				{
 					retl = read(sock, recvb+rlen,
 						sizeof(recvb)-1-rlen);
 					if (retl < 0)
@@ -780,6 +803,7 @@ main(int argc, char *argv[])
 			if (rlen <= 0)
 				return 1;
 
+#ifdef ENABLE_TLS
 			if (istls) {
 				if (pipe(tlspipe) < 0) {
 					perror("tls_pipe");
@@ -819,6 +843,7 @@ main(int argc, char *argv[])
 					return 0;
 				}
 			}
+#endif /* ENABLE_TLS */
 
 			handlerequest(sock, recvb, rlen, base,
 					ohost, sport, clienth,
@@ -855,11 +880,13 @@ main(int argc, char *argv[])
 	}
 	free(listfds);
 
+#ifdef ENABLE_TLS
 	if (dotls) {
 		tls_close(tlsctx);
 		tls_free(tlsctx);
 		tls_config_free(tlsconfig);
 	}
+#endif /* ENABLE_TLS */
 
 	return 0;
 }
