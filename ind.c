@@ -123,7 +123,7 @@ xsendfile(int fd, int sock)
 	while ((len = read(fd, sendb, bufsiz)) > 0) {
 		sendi = sendb;
 		while (len > 0) {
-			if ((sent = send(sock, sendi, len, 0)) < 0) {
+			if ((sent = write(sock, sendi, len)) < 0) {
 				free(sendb);
 				return -1;
 			}

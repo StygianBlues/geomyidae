@@ -170,7 +170,7 @@ handlerequest(int sock, char *req, int rlen, char *base, char *ohost,
 				recvb + 4, recvb + 4, recvb + 4);
 		if (len > sizeof(path))
 			len = sizeof(path);
-		send(sock, path, len, 0);
+		write(sock, path, len);
 		if (loglvl & HTTP)
 			logentry(clienth, clientp, recvc, "HTTP redirect");
 		return;
