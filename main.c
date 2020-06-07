@@ -120,16 +120,14 @@ handlerequest(int sock, char *base, char *ohost, char *port, char *clienth,
 			char *clientp, int nocgi)
 {
 	struct stat dir;
-	char recvc[1025], recvb[1025], path[1025], *args, *sear, *c;
-	int len, fd, i, retl, maxrecv;
+	char recvc[1025], recvb[1025], path[1025], *args = NULL, *sear, *c;
+	int len = 0, fd, i, retl, maxrecv;
 	filetype *type;
 
 	memset(&dir, 0, sizeof(dir));
 	memset(recvb, 0, sizeof(recvb));
 	memset(recvc, 0, sizeof(recvc));
-	args = NULL;
 
-	len = 0;
 	maxrecv = sizeof(recvb);
 	/*
 	 * Force at least one byte per packet. Limit, so the server
@@ -423,28 +421,18 @@ main(int argc, char *argv[])
 	struct addrinfo hints;
 	struct sockaddr_storage clt;
 	socklen_t cltlen;
-	int sock, dofork, inetf, usechroot, nocgi, errno_save, nbindips, i, j,
+	int sock, dofork = 1, inetf = AF_UNSPEC, usechroot = 0,
+	    nocgi = 0, errno_save, nbindips = 0, i, j,
 	    nlfdret, *lfdret, listfd, maxlfd;
-	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV];
-	char *user, *group, **bindips, *ohost, *sport, *p;
-	struct passwd *us;
-	struct group *gr;
 	fd_set rfd;
+	char *port, *base, clienth[NI_MAXHOST], clientp[NI_MAXSERV],
+	     *user = NULL, *group = NULL, **bindips = NULL,
+	     *ohost = NULL, *sport = NULL, *p;
+	struct passwd *us = NULL;
+	struct group *gr = NULL;
 
 	base = stdbase;
 	port = stdport;
-	dofork = 1;
-	user = NULL;
-	group = NULL;
-	us = NULL;
-	gr = NULL;
-	bindips = NULL;
-	nbindips = 0;
-	ohost = NULL;
-	sport = NULL;
-	inetf = AF_UNSPEC;
-	usechroot = 0;
-	nocgi = 0;
 
 	ARGBEGIN {
 	case '4':
