@@ -480,7 +480,12 @@ setcgienviron(char *file, char *path, char *port, char *base, char *args,
 	/* TODO: Separate, if run like rest.dcgi. */
 	setenv("PATH_INFO", file, 1);
 	setenv("PATH_TRANSLATED", path, 1);
+
 	setenv("QUERY_STRING", args, 1);
+	/* legacy compatibility */
+	setenv("SELECTOR", args, 1);
+	setenv("REQUEST", args, 1);
+
 	setenv("REMOTE_ADDR", chost, 1);
 	/*
 	 * Don't do a reverse lookup on every call. Only do when needed, in
@@ -504,6 +509,8 @@ setcgienviron(char *file, char *path, char *port, char *base, char *args,
 	setenv("SERVER_SOFTWARE", "geomyidae", 1);
 
 	setenv("X_GOPHER_SEARCH", sear, 1);
+	/* legacy compatibility */
+	setenv("SEARCHREQUEST", sear, 1);
 
 	if (istls) {
 		setenv("GOPHERS", "on", 1);
