@@ -121,7 +121,8 @@ logentry(char *host, char *port, char *qry, char *status)
 
 void
 handlerequest(int sock, char *req, int rlen, char *base, char *ohost,
-	      char *port, char *clienth, char *clientp, int nocgi)
+	      char *port, char *clienth, char *clientp, int nocgi,
+	      int istls)
 {
 	struct stat dir;
 	char recvc[1025], recvb[1025], path[1025], *args = NULL, *sear, *c;
@@ -247,12 +248,12 @@ handlerequest(int sock, char *req, int rlen, char *base, char *ohost,
 				logentry(clienth, clientp, recvc, "nocgi error");
 		} else {
 			type->f(sock, path, port, base, args, sear, ohost,
-				clienth);
+				clienth, istls);
 		}
 	} else {
 		if (S_ISDIR(dir.st_mode)) {
 			handledir(sock, path, port, base, args, sear, ohost,
-				clienth);
+				clienth, istls);
 			if (loglvl & DIRS) {
 				logentry(clienth, clientp, recvc,
 							"dir listing");
@@ -863,7 +864,7 @@ main(int argc, char *argv[])
 
 			handlerequest(sock, recvb, rlen, base,
 					ohost, sport, clienth,
-					clientp, nocgi);
+					clientp, nocgi, istls);
 
 			if (!istls) {
 				waitforpendingbytes(sock);

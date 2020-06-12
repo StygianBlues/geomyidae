@@ -465,7 +465,7 @@ reverselookup(char *host)
 
 void
 setcgienviron(char *file, char *path, char *port, char *base, char *args,
-		char *sear, char *ohost, char *chost)
+		char *sear, char *ohost, char *chost, int istls)
 {
 	/*
 	 * TODO: Clean environment from possible unsafe environment variables.
@@ -485,6 +485,7 @@ setcgienviron(char *file, char *path, char *port, char *base, char *args,
 	 * the script. The RFC allows us to set the IP to the value.
 	 */
 	setenv("REMOTE_HOST", chost, 1);
+	/* Please do not implement identd here. */
 	unsetenv("REMOTE_IDENT");
 	unsetenv("REMOTE_USER");
 	/* Make PHP happy. */
@@ -501,5 +502,14 @@ setcgienviron(char *file, char *path, char *port, char *base, char *args,
 	setenv("SERVER_SOFTWARE", "geomyidae", 1);
 
 	setenv("X_GOPHER_SEARCH", sear, 1);
+
+	if (istls) {
+		setenv("GOPHERS", "on", 1);
+		setenv("HTTPS", "on", 1);
+	} else {
+		unsetenv("GOPHERS");
+		unsetenv("HTTPS");
+	}
+
 }
 

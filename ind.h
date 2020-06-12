@@ -27,7 +27,7 @@ struct filetype {
         char *end;
         char *type;
         void (* f)(int, char *, char *, char *, char *, char *, char *,
-		char *);
+		char *, int);
 };
 
 filetype *gettype(char *filename);
@@ -48,7 +48,8 @@ void freeelem(Elems *e);
 char *smprintf(char *fmt, ...);
 char *reverselookup(char *host);
 void setcgienviron(char *file, char *path, char *port, char *base,
-		char *args, char *sear, char *ohost, char *chost);
+		char *args, char *sear, char *ohost, char *chost,
+		int istls);
 
 #endif
 
