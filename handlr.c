@@ -66,8 +66,13 @@ handledir(int sock, char *path, char *port, char *base, char *args,
 			if (stat(file, &st) >= 0 && S_ISDIR(st.st_mode))
 				type = gettype("index.gph");
 			e = file + strlen(base);
-			ret = dprintf(sock, "%c%s\t%s\t%s\t%s\r\n", *type->type,
-				dirent[i]->d_name, e, ohost, port);
+			ret = dprintf(sock,
+					"%c%-50.50s %10s %16s\t%s\t%s\t%s\r\n",
+					*type->type,
+					dirent[i]->d_name,
+					humansize(st.st_size),
+					humantime(&(st.st_mtim.tv_sec)),
+					e, ohost, port);
 			free(file);
 			free(dirent[i]);
 		}

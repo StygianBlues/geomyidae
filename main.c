@@ -202,7 +202,7 @@ handlerequest(int sock, char *req, int rlen, char *base, char *ohost,
 	}
 
 	if (recvb[0] != '/' || strstr(recvb, "..")){
-		dprintf(sock, selinval);
+		dprintf(sock, "%s", selinval);
 		return;
 	}
 

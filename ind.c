@@ -10,6 +10,8 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <time.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -511,5 +513,38 @@ setcgienviron(char *file, char *path, char *port, char *base, char *args,
 		unsetenv("HTTPS");
 	}
 
+}
+
+char *
+humansize(off_t n)
+{
+	static char buf[16];
+	const char postfixes[] = "BKMGTPE";
+	double size;
+	int i = 0;
+
+	for (size = n; size >= 1024 && i < strlen(postfixes); i++)
+		size /= 1024;
+
+	if (!i) {
+		snprintf(buf, sizeof(buf), "%ju%c", (uintmax_t)n,
+				postfixes[i]);
+	} else {
+		snprintf(buf, sizeof(buf), "%.1f%c", size, postfixes[i]);
+	}
+
+	return buf;
+}
+
+char *
+humantime(const time_t *clock)
+{
+	static char buf[32];
+	struct tm *tm;
+
+	tm = localtime(clock);
+	strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M %Z", tm);
+
+	return buf;
 }
 
