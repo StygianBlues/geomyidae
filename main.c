@@ -794,7 +794,7 @@ main(int argc, char *argv[])
 
 				return 1;
 			}
-#endif
+#endif /* ENABLE_TLS */
 
 			maxrecv = sizeof(recvb) - 1;
 			do {
