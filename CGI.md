@@ -1,25 +1,25 @@
-INTRODUCTION
+# INTRODUCTION TO CGI
 
-Geomyidae has support for running scripts on each request, which will generate
-dynamic content.
+Geomyidae has  support for running  scripts on each request,  which will
+generate dynamic content.
 
-There are two modes: standard cgi and dynamic cgi.
-(»CGI« as name was just taken, because that's easier to compare to the web.)
-
-
-PERMISSIONS
-
-The scripts are run using the permissions of geomyidae. It is advised to use
-the -g and -u options of geomyidae.
+There are two modes: standard cgi  and dynamic cgi. (»CGI« as name was
+just taken, because that's easier to compare to the web.)
 
 
-BEFOREHAND
+## PERMISSIONS
 
-In these examples C: is what the client sends and S: what the server is
+The scripts are run using the permissions of geomyidae. It is advised to
+use the -g and -u options of geomyidae.
+
+
+## BEFOREHAND
+
+In these examples C: is what the  client sends and S: what the server is
 sending.
 
 
-CALLING CONVENTION
+## CALLING CONVENTION
 
 Geomyidae will call the script like this:
 
@@ -60,11 +60,11 @@ If both ways of input are combined, the variables are set as following:
 	-> $port = server port
 
 
-STANDARD CGI
+## STANDARD CGI
 
-The file extension »cgi« switches to this mode, where the output of the
-script is not interpreted at all by the server and the script needs to send
-raw content.
+The file  extension »cgi« switches to  this mode, where the  output of
+the script is not interpreted at all  by the server and the script needs
+to send raw content.
 
 	% cat test.cgi
 	#!/bin/sh
@@ -76,28 +76,33 @@ The client will receive:
 	S: Hello my friend.
 
 
-DYNAMIC CGI
+## DYNAMIC CGI
 
-For using dynamic CGI, the file needs to end in »dcgi«, which will switch on
-the interpretation of the returned lines by the server. The interpreted for-
-mat is the same as in the *.gph files.
+For using  dynamic CGI, the  file needs to  end in »dcgi«,  which will
+switch on  the interpretation of the  returned lines by the  server. The
+interpreted for- mat is the same as in the .gph files.
 
 	% cat test.dcgi
 	#!/bin/sh
 	echo "[1|Some link|/somewhere|server|port]"
 	%
 
-Here geomyidae will interpret the *.gph format and return the valid gopher
-menu item.
+Here  geomyidae will  interpret the  .gph format  and return  the valid
+gopher menu item.
 
 	S: 1Some link	/somewhere	gopher.r-36.net	70
 
-For outputting large texts and having minor hassles with the content, prepend
-»t« to every line beginning with »t« or all lines:
+For outputting  large texts and  having minor hassles with  the content,
+prepend »t« to every line beginning with »t« or all lines:
 
 	% cat filereader.dcgi
 	#!/bin/sh
 	cat bigfile.txt | sed 's,^t,&&,'
+
+## ENVIRONMENT VARIABLES
+
+Please see the manpage geomyidae(8) for all variables and their content.
+
 
 Have fun!
 
